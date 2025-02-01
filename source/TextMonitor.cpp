@@ -67,7 +67,7 @@ void TextMonitor::printNavBar(WINDOW* Wcontent) const
         "Credits       "
     };
     static const char* contentItems[] = {
-        "Information", "Processor", "Memory", "Network", "Credits"
+        "Information", "[p] Processor", "[m] Memory", "[n] Network", "Credits"
     };
     WINDOW *Wnavbar = subwin(stdscr, m_height - 2, 19, 1, 2);
 
@@ -128,9 +128,85 @@ void TextMonitor::printInformation(WINDOW* Wcontent) const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+static void drawCPUGraph(WINDOW* Wgraph, const std::list<double>& graph, int width, int height, double current)
+{
+    if (graph.empty()) {
+        for (int y = 1; y < height - 1; y++) {
+            for (int x = 1; x < width - 1; x++) {
+                mvwaddch(Wgraph, y, x, ' ');
+            }
+        }
+        return;
+    }
+
+    const int graphHeight = height - 2;
+    const int graphWidth = width - 2;
+
+    std::vector<std::vector<char>> buffer(graphHeight, std::vector<char>(graphWidth, ' '));
+
+    int dataPoints = std::min(static_cast<int>(graph.size()), graphWidth);
+
+    std::vector<double> values;
+    auto it = graph.end();
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        values.insert(values.begin(), *it);
+        if (it == graph.begin()) break;
+    }
+
+    for (int x = 0; x < (int)values.size(); x++) {
+        double value = values[x];
+        int barHeight = static_cast<int>((value / 100.0) * (graphHeight - 1));
+        barHeight = std::min(barHeight, graphHeight - 1);
+        
+        for (int y = 0; y < barHeight; y++) {
+            int invertedY = graphHeight - 1 - y;
+            
+            if (y == barHeight - 1) buffer[invertedY][x] = '^';
+            else if (value > 75)    buffer[invertedY][x] = '#';
+            else if (value > 50)    buffer[invertedY][x] = '=';
+            else if (value > 25)    buffer[invertedY][x] = '-';
+            else                    buffer[invertedY][x] = '.';
+        }
+    }
+
+    mvwprintw(Wgraph, 1, 1, "100%%");
+    mvwprintw(Wgraph, height/2, 1, "50%%");
+    mvwprintw(Wgraph, height-2, 1, "0%%");
+
+    for (int y = 0; y < graphHeight; y++) {
+        wmove(Wgraph, y + 1, 1);
+        for (int x = 0; x < graphWidth; x++) {
+            mvwaddch(Wgraph, y + 1, x + 1, buffer[y][x]);
+        }
+    }
+
+    mvwprintw(Wgraph, height-1, 1, " %.2lf%% ", current);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void TextMonitor::printProcessor(WINDOW* Wcontent) const
 {
-    (void)Wcontent;
+    if (!m_cpu.isEnabled()) wattron(Wcontent, WA_DIM);
+    {
+        int width = m_width - 25, height = 22;
+        WINDOW* Wgraph = subwin(stdscr, height, width, 3, 23);
+        std::list<double> graph = m_cpu.getGraph();
+
+        wclear(Wgraph);
+        if (!m_cpu.isEnabled()) wattron(Wgraph, WA_DIM);
+        box(Wgraph, ACS_VLINE, ACS_HLINE);
+        mvwprintw(Wgraph, 0, 2, " Usage ");
+        drawCPUGraph(Wgraph, graph, width, height, m_cpu.getUsage());
+        if (!m_cpu.isEnabled()) wattroff(Wgraph, WA_DIM);
+    }
+    mvwprintw(Wcontent, 25, 3, "Vendor: %s", m_cpu.getProcs()[0]["vendorId"].c_str());
+    mvwprintw(Wcontent, 27, 3, "CPU Model: %s", m_cpu.getProcs()[0]["modelName"].c_str());
+    mvwprintw(Wcontent, 29, 3, "CPU Cores: %s", m_cpu.getProcs()[0]["cpuCores"].c_str());
+    mvwprintw(Wcontent, 31, 3, "Cache Size: %s", m_cpu.getProcs()[0]["cacheSize"].c_str());
+    mvwprintw(Wcontent, 33, 3, "Physical Cores: %ld", m_cpu.getProcs().size());
+    mvwprintw(Wcontent, 35, 3, "Address Sizes: %s", m_cpu.getProcs()[0]["addressSizes"].c_str());
+    if (!m_cpu.isEnabled()) wattroff(Wcontent, WA_DIM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
