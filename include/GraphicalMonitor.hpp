@@ -74,9 +74,15 @@ public:
     void createBackground(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor) const;
 
-    void drawButton(sf::RenderWindow &window, const sf::Vector2f &size,
+    void textbox(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor,
         const std::string &textString) const;
+
+    void textbox(sf::RenderWindow &window,
+        const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
+        const std::string &textString, float outline,
+        sf::Color outlineColor) const;
+    void backgroundBuild(sf::RenderWindow &window) const;
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////

@@ -28,8 +28,8 @@
 // Dependencies
 ///////////////////////////////////////////////////////////////////////////////
 #include "GraphicalMonitor.hpp"
+#include <cmath>
 #include <iostream>
-
 ///////////////////////////////////////////////////////////////////////////////
 GraphicalMonitor::GraphicalMonitor(void) : IMonitorDisplay(), m_selected(0)
 {
@@ -43,9 +43,10 @@ GraphicalMonitor::~GraphicalMonitor()
 ///////////////////////////////////////////////////////////////////////////////
 /*
 Todo:
-- navigation bar
-- button creation system
-- getinputs
+- navigation bar ✅
+- button creation system ✅
+- getinputs ✅
+- mouse inputsgi
 - graphs
 - getinfo
 - get processor info
@@ -82,7 +83,7 @@ void GraphicalMonitor::createBackground(sf::RenderWindow &window,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void GraphicalMonitor::drawButton(sf::RenderWindow &window,
+void GraphicalMonitor::textbox(sf::RenderWindow &window,
     const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
     const std::string &textString) const
 {
@@ -93,20 +94,54 @@ void GraphicalMonitor::drawButton(sf::RenderWindow &window,
 
     sf::Font font;
     if (!font.loadFromFile(
-            "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf")) {
+            "/usr/share/fonts/google-carlito-fonts/Carlito-Regular.ttf")) {
         std::cerr << "Error loading font!" << std::endl;
     }
     // Create the text
     sf::Text text;
     text.setFont(font);
     text.setString(textString);
-    text.setCharacterSize(12);
-    text.setFillColor(sf::Color::White);
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color(32, 32, 32));
 
-    // Center text within the rectangle
-    sf::FloatRect textBounds = text.getLocalBounds();
-    text.setOrigin(textBounds.width / 2.f, textBounds.height / 2.f);
-    text.setPosition(pos.x + size.x / 3.f, pos.y + size.y / 2.f);
+    text.setOrigin(0, 0);
+
+    // Position the text in the rectangle (left-aligned)
+    text.setPosition(pos.x + 10.f, pos.y + (size.y - text.getLocalBounds().height) / 4.f);
+
+    // Draw both
+    window.draw(rect);
+    window.draw(text);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::textbox(sf::RenderWindow &window,
+    const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
+    const std::string &textString, float outline, sf::Color outlineColor) const
+{
+    // Create the rectangle (button)
+    sf::RectangleShape rect(size);
+    rect.setPosition(pos);
+    rect.setFillColor(fillColor);
+    rect.setOutlineThickness(outline);
+    rect.setOutlineColor(outlineColor);
+
+    sf::Font font;
+    if (!font.loadFromFile(
+            "/usr/share/fonts/google-carlito-fonts/Carlito-Regular.ttf")) {
+        std::cerr << "Error loading font!" << std::endl;
+    }
+    // Create the text
+    sf::Text text;
+    text.setFont(font);
+    text.setString(textString);
+    text.setCharacterSize(14);
+    text.setFillColor(sf::Color(32, 32, 32));
+
+    text.setOrigin(0, 0);
+
+    // Position the text in the rectangle (left-aligned)
+    text.setPosition(pos.x + 10.f, pos.y + (size.y - text.getLocalBounds().height) / 3.f);
 
     // Draw both
     window.draw(rect);
@@ -117,34 +152,77 @@ void GraphicalMonitor::drawButton(sf::RenderWindow &window,
 info:
 - taskbar is 240/1115 aka 22% of the x axis
 - buttons are 36/680 about 5% of y axis and 20% x
+- title is 50/677 about 7.5%;
 */
+
+
 ///////////////////////////////////////////////////////////////////////////////
-void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window) const
+void GraphicalMonitor::backgroundBuild(sf::RenderWindow &window) const
 {
+    static const char* contentItems[] = {
+        "Information", "Processor", "Memory", "Network", "Credits"
+    };
+
     sf::Vector2f sidebar_size = {static_cast<float>(window.getSize().x)
             * 0.22f,
         static_cast<float>(window.getSize().y)};
     sf::Vector2f sidebar_pos = {0, 0};
 
+    sf::Vector2f content_size = {static_cast<float>(window.getSize().x) - sidebar_pos.x,
+        static_cast<float>(window.getSize().y)};
+    sf::Vector2f content_pos = {sidebar_size.x, 0};
+
+        sf::Vector2f title_size = {content_size.x,
+            static_cast<float>(window.getSize().y * 0.07f)};
+    sf::Vector2f title_pos = {sidebar_size.x, 0.f};
+
+    
+    //side bar
+    createBackground(window, sidebar_size, sidebar_pos, sf::Color(192, 192, 192));
+    //content
+    createBackground(window, content_size, content_pos, sf::Color(215, 215, 215));
+    //titlecard
+    textbox(window, title_size, title_pos, sf::Color::Transparent, contentItems[m_selected], 1.f, sf::Color(164, 164, 164));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window) const
+{
+    static const char *menuItems[] = {"Information", "Processor", "Memory",
+        "Network", "Credits"};
+
+    backgroundBuild(window);
     const sf::Vector2 buttonSize = {static_cast<float>(window.getSize().x)
             * 0.21f,
-        static_cast<float>(window.getSize().y) * 0.05f};
+        window.getSize().x * 0.04f};
+
     const sf::Vector2 firstButtonPos = {2.f, 2.f};
 
-    createBackground(window, sidebar_size, sidebar_pos,
-        sf::Color(192, 192, 192));
-
-    drawButton(window, buttonSize, firstButtonPos, sf::Color(64, 64, 64),
-        "long ass name");
-
+    for (size_t i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++) {
+        float yOffset = window.getSize().y * 0.06f * i;
+        if (i == m_selected) {
+            textbox(window, buttonSize,
+                {firstButtonPos.x, firstButtonPos.y + yOffset},
+                sf::Color(164, 164, 164), menuItems[i]);
+        } else {
+            textbox(window, buttonSize,
+                {firstButtonPos.x, firstButtonPos.y + yOffset},
+                sf::Color(192, 192, 192), menuItems[i]);
+        }
+    }
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handleInput(sf::Event event)
 {
-    if (event.type == sf::Event::KeyPressed){
-        if (event.key.code == sf::Keyboard::Up)
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::Up && m_selected > 0)
+            m_selected--;
+        if (event.key.code == sf::Keyboard::Down && m_selected < 4)
             m_selected++;
+        // std::cout << m_selected << std::endl;
     }
 }
 
@@ -161,6 +239,7 @@ int GraphicalMonitor::loop(void)
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
+            handleInput(event);
         }
 
         refresh();
