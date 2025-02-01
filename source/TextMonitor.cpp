@@ -56,6 +56,7 @@ bool TextMonitor::getInput(void)
     if (c == (int)'d') m_disk.setEnabled(!m_disk.isEnabled());
     if (c == (int)'e') m_process.setEnabled(!m_process.isEnabled());
     if (c == (int)'s') m_service.setEnabled(!m_service.isEnabled());
+    if (c == (int)'b') m_battery.setEnabled(!m_battery.isEnabled());
     if (c == (int)'q') return (false);
     if (c == KEY_UP && m_selected > 0) { m_selected--; clear(); }
     if (c == KEY_DOWN && m_selected < 8) { m_selected++; clear(); }
@@ -74,7 +75,11 @@ void TextMonitor::printNavBar(WINDOW* Wcontent) const
         "Credits       ",
     };
     static const char* contentItems[] = {
-        "Information", "[p] Processor", "[m] Memory", "[e] Processus", "[s] Services", "[n] Network", "[d] Disks", "Battery", "Credits"
+        "Information", "[p] Processor",
+        "[m] Memory", "[e] Processus",
+        "[s] Services", "[n] Network",
+        "[d] Disks", "[b] Battery",
+        "Credits"
     };
     WINDOW *Wnavbar = subwin(stdscr, m_height - 2, 19, 1, 2);
 
@@ -456,6 +461,7 @@ void TextMonitor::printDisks(WINDOW* Wcontent) const
 ///////////////////////////////////////////////////////////////////////////////
 void TextMonitor::printBattery(WINDOW *Wcontent) const
 {
+    if (!m_battery.isEnabled()) wattron(Wcontent, WA_DIM);
     (void)Wcontent;
 
     mvwprintw(Wcontent, 2, 2, "Battery Information");
@@ -483,6 +489,7 @@ void TextMonitor::printBattery(WINDOW *Wcontent) const
     mvwprintw(Wcontent, 25, 2, "Technology:      %s", battery.m_technology.c_str());
     mvwprintw(Wcontent, 27, 2, "Alarm:           %s", battery.m_alarm.c_str());
     mvwprintw(Wcontent, 29, 2, "Present:         %s", battery.m_present == "1" ? "Yes" : "No");
+    if (!m_battery.isEnabled()) wattroff(Wcontent, WA_DIM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
