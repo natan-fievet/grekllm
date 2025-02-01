@@ -88,7 +88,7 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     void drawTextBox(sf::RenderWindow &window, sf::RectangleShape &rect,
         sf::Text &text, const sf::Vector2f &size, const sf::Vector2f &pos,
-        sf::Color fillColor, const std::string &textString);
+        sf::Color fillColor, const std::string &textString, float outline, sf::Color outlineColor);
 
     void textbox(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor,
@@ -103,7 +103,7 @@ public:
     void textbox(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor,
         const std::string &textString, float outline,
-        sf::Color outlineColor) const;
+        sf::Color outlineColor);
 
     void backgroundBuild(sf::RenderWindow &window);
 

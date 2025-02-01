@@ -53,8 +53,8 @@ Todo:
 - button creation system ✅
 - getinputs ✅
 - mouse inputsgi ✅
+- getinfo ✅
 - graphs
-- getinfo
 - get processor info
 - get mem info
 - geet network info
@@ -92,7 +92,8 @@ void GraphicalMonitor::createBackground(sf::RenderWindow &window,
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::drawTextBox(sf::RenderWindow &window,
     sf::RectangleShape &rect, sf::Text &text, const sf::Vector2f &size,
-    const sf::Vector2f &pos, sf::Color fillColor, const std::string &textString)
+    const sf::Vector2f &pos, sf::Color fillColor, const std::string &textString,
+    float outline, sf::Color outlineColor)
 {
     // Create the rectangle (button or textbox)
     rect.setSize(size);
@@ -104,7 +105,8 @@ void GraphicalMonitor::drawTextBox(sf::RenderWindow &window,
     text.setString(textString);
     text.setCharacterSize(14);
     text.setFillColor(sf::Color(32, 32, 32));
-
+    rect.setOutlineThickness(outline);
+    rect.setOutlineColor(outlineColor);
     text.setOrigin(0, 0);
 
     // Position the text in the rectangle (left-aligned)
@@ -123,7 +125,7 @@ void GraphicalMonitor::button(sf::RenderWindow &window,
 {
     Button button;
     // Call the drawTextBox function to handle the common drawing logic
-    drawTextBox(window, button.rect, button.text, size, pos, fillColor, textString);
+    drawTextBox(window, button.rect, button.text, size, pos, fillColor, textString, 0.f, sf::Color::Transparent);
     m_buttons.push_back(button);
 }
 
@@ -134,38 +136,21 @@ void GraphicalMonitor::textbox(sf::RenderWindow &window,
     sf::RectangleShape rect;
     sf::Text text;
     // Call the drawTextBox function to handle the common drawing logic
-    drawTextBox(window, rect, text, size, pos, fillColor, textString);
+    drawTextBox(window, rect, text, size, pos, fillColor, textString, 0.f, sf::Color::Transparent);
 }
+
 
 
 // //outlined textbox /no button with outline
 // ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::textbox(sf::RenderWindow &window,
     const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
-    const std::string &textString, float outline, sf::Color outlineColor) const
+    const std::string &textString, float outline, sf::Color outlineColor)
 {
-    sf::RectangleShape rect(size);
-    rect.setPosition(pos);
-    rect.setFillColor(fillColor);
-    rect.setOutlineThickness(outline);
-    rect.setOutlineColor(outlineColor);
-
-    // Create the text
+    sf::RectangleShape rect;
     sf::Text text;
-    text.setFont(m_font);
-    text.setString(textString);
-    text.setCharacterSize(14);
-    text.setFillColor(sf::Color(32, 32, 32));
+    drawTextBox(window, rect, text, size, pos, fillColor, textString, outline, outlineColor);
 
-    text.setOrigin(0, 0);
-
-    // Position the text in the rectangle (left-aligned)
-    text.setPosition(pos.x + 10.f,
-        pos.y + (size.y - text.getLocalBounds().height) / 3.f);
-
-    // Draw both
-    window.draw(rect);
-    window.draw(text);
 }
 
 /*
