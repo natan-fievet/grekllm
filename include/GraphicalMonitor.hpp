@@ -36,9 +36,9 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
-#include <vector>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <vector>
 
 struct Button {
     sf::RectangleShape rect;
@@ -78,8 +78,8 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     void PrintNavBar(sf::RenderWindow &window);
     void printInfo(sf::RenderWindow &window);
+    void printProcessor(sf::RenderWindow &window);
     void printmem(sf::RenderWindow &window);
-
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
@@ -125,4 +125,10 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+    void drawCPUGraph(sf::RenderWindow &window, const std::list<double> &graph,
+        const sf::Vector2f &size, const sf::Vector2f &position);
+    void drawMemoryGraph(sf::RenderWindow &window,
+
+        const std::list<MemoryModule::Data> &graph, const sf::Vector2f &size,
+        const sf::Vector2f &position, bool isSwap);
 };
