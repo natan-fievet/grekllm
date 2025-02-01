@@ -92,8 +92,8 @@ void GraphicalMonitor::createBackground(sf::RenderWindow &window,
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::drawTextBox(sf::RenderWindow &window,
     sf::RectangleShape &rect, sf::Text &text, const sf::Vector2f &size,
-    const sf::Vector2f &pos, sf::Color fillColor, const std::string &textString,
-    float outline, sf::Color outlineColor)
+    const sf::Vector2f &pos, sf::Color fillColor,
+    const std::string &textString, float outline, sf::Color outlineColor)
 {
     // Create the rectangle (button or textbox)
     rect.setSize(size);
@@ -125,7 +125,8 @@ void GraphicalMonitor::button(sf::RenderWindow &window,
 {
     Button button;
     // Call the drawTextBox function to handle the common drawing logic
-    drawTextBox(window, button.rect, button.text, size, pos, fillColor, textString, 0.f, sf::Color::Transparent);
+    drawTextBox(window, button.rect, button.text, size, pos, fillColor,
+        textString, 0.f, sf::Color::Transparent);
     m_buttons.push_back(button);
 }
 
@@ -136,10 +137,9 @@ void GraphicalMonitor::textbox(sf::RenderWindow &window,
     sf::RectangleShape rect;
     sf::Text text;
     // Call the drawTextBox function to handle the common drawing logic
-    drawTextBox(window, rect, text, size, pos, fillColor, textString, 0.f, sf::Color::Transparent);
+    drawTextBox(window, rect, text, size, pos, fillColor, textString, 0.f,
+        sf::Color::Transparent);
 }
-
-
 
 // //outlined textbox /no button with outline
 // ///////////////////////////////////////////////////////////////////////////////
@@ -149,8 +149,8 @@ void GraphicalMonitor::textbox(sf::RenderWindow &window,
 {
     sf::RectangleShape rect;
     sf::Text text;
-    drawTextBox(window, rect, text, size, pos, fillColor, textString, outline, outlineColor);
-
+    drawTextBox(window, rect, text, size, pos, fillColor, textString, outline,
+        outlineColor);
 }
 
 /*
@@ -191,31 +191,6 @@ void GraphicalMonitor::backgroundBuild(sf::RenderWindow &window)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window)
-{
-    static const char *menuItems[] = {"Information", "Processor", "Memory",
-        "Network", "Credits"};
-
-    backgroundBuild(window);
-    const sf::Vector2 buttonSize = {static_cast<float>(window.getSize().x)
-            * 0.21f,
-        window.getSize().x * 0.04f};
-
-    const sf::Vector2 firstButtonPos = {2.f, 2.f};
-
-    if (m_buttons.size() != 0)
-        m_buttons.clear();
-    for (size_t i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++) {
-        float yOffset = window.getSize().y * 0.06f * i;
-        sf::Color fillColor = (i == m_selected) ? sf::Color(164, 164, 164)
-                                                : sf::Color(192, 192, 192);
-        button(window, buttonSize,
-            {firstButtonPos.x, firstButtonPos.y + yOffset}, fillColor,
-            menuItems[i]);
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 sf::Vector2f GraphicalMonitor::subTitle(sf::RenderWindow &window,
     const std::string subtitle, float yPos)
 {
@@ -244,15 +219,42 @@ sf::Vector2f GraphicalMonitor::subTitle(sf::RenderWindow &window,
 sf::Vector2f GraphicalMonitor::textPrepper(sf::RenderWindow &window,
     const std::string words, sf::Vector2f pos)
 {
-    sf::Text text(words, m_font, 14);
+    sf::Text text(words, m_font, 28);
     sf::FloatRect textBounds = text.getLocalBounds();
 
-    sf::Vector2f size = {textBounds.width, _titlecardSize.y};
+    // sf::Vector2f size = {textBounds.width, _titlecardSize.y};
+
+    sf::Vector2f size = {textBounds.width,
+        _titlecardSize.y - (_titlecardSize.y - textBounds.height)};
     textbox(window, size, pos, sf::Color::Transparent, words);
     return size;
 }
 
-// add the y pos every time together and send it.
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window)
+{
+    static const char *menuItems[] = {"Information", "Processor", "Memory",
+        "Network", "Credits"};
+
+    backgroundBuild(window);
+    const sf::Vector2 buttonSize = {static_cast<float>(window.getSize().x)
+            * 0.21f,
+        window.getSize().x * 0.04f};
+
+    const sf::Vector2 firstButtonPos = {2.f, 2.f};
+
+    if (m_buttons.size() != 0)
+        m_buttons.clear();
+    for (size_t i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); i++) {
+        float yOffset = window.getSize().y * 0.06f * i;
+        sf::Color fillColor = (i == m_selected) ? sf::Color(164, 164, 164)
+                                                : sf::Color(192, 192, 192);
+        button(window, buttonSize,
+            {firstButtonPos.x, firstButtonPos.y + yOffset}, fillColor,
+            menuItems[i]);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::printInfo(sf::RenderWindow &window)
 {
@@ -262,23 +264,137 @@ void GraphicalMonitor::printInfo(sf::RenderWindow &window)
 
     pos.y += subTitle(window, "[t] time module", pos.y).y;
     if (m_time.isEnabled()) {
-        pos.y += textPrepper(window, std::string("\tCurrent Date: ") + m_time.getTime().c_str(), pos).y;
+        pos.y += textPrepper(window,
+            std::string("\tCurrent Date: ") + m_time.getTime().c_str(), pos).y;
         pos.y += margine;
     }
 
     pos.y += subTitle(window, "[u] User module", pos.y).y;
     if (m_user.isEnabled()) {
-        pos.y += textPrepper(window, std::string("\tUser Name: ") + m_user.getUserName().c_str(), pos).y;
-        pos.y += textPrepper(window, std::string("\tHost Name: ") + m_user.getHostName().c_str(), pos).y;
+        pos.y += textPrepper(window,
+            std::string("\tUser Name: ") + m_user.getUserName().c_str(), pos).y;
+        pos.y += textPrepper(window,
+            std::string("\tHost Name: ") + m_user.getHostName().c_str(), pos).y;
         pos.y += margine;
     }
     pos.y += subTitle(window, "[o] Operating System Module", pos.y).y;
     if (m_os.isEnabled()) {
-        pos.y += textPrepper(window, std::string("\tOs Name: ") + m_os.getOs().c_str(), pos).y;
-        pos.y += textPrepper(window, std::string("\tKernel Name: ") + m_os.getKernel().c_str(), pos).y;
+        pos.y += textPrepper(window,
+            std::string("\tOs Name: ") + m_os.getOs().c_str(), pos).y;
+        pos.y += textPrepper(window,
+            std::string("\tKernel Name: ") + m_os.getKernel().c_str(), pos).y;
         pos.y += margine;
     }
 }
+
+void drawMemoryGraph(sf::RenderWindow &window, const std::list<MemoryModule::Data> &graph,
+    const sf::Vector2f &size, const sf::Vector2f &position, bool isSwap)
+{
+    if (graph.empty()) return;
+
+    sf::VertexArray lineGraph(sf::LineStrip, graph.size());
+    sf::VertexArray fillGraph(sf::TriangleStrip, graph.size() * 2);
+
+    float maxHeight = size.y; // Graph height
+    float maxWidth = size.x;  // Graph width
+
+    // Get the last `size.x` data points
+    std::vector<float> values;
+    auto it = graph.end();
+    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        values.insert(values.begin(), isSwap ? it->swap : it->mem);
+        if (it == graph.begin()) break;
+    }
+
+    // Normalize and map values to the graph size
+    for (size_t i = 0; i < values.size(); i++) {
+        float value = values[i]; // Value in percentage (0-100)
+        float x = position.x + (i * (maxWidth / values.size()));
+        float y = position.y + maxHeight - (value / 100.f * maxHeight);
+
+        // Line Graph (Top Border)
+        lineGraph[i].position = sf::Vector2f(x, y);
+        lineGraph[i].color = sf::Color::Green; // Customize color
+
+        // Filled Area (Triangle Strip)
+        fillGraph[i * 2].position = sf::Vector2f(x, y);
+        fillGraph[i * 2].color = sf::Color(0, 255, 0, 150); // Semi-transparent green
+
+        fillGraph[i * 2 + 1].position = sf::Vector2f(x, position.y + maxHeight);
+        fillGraph[i * 2 + 1].color = sf::Color(0, 255, 0, 50); // Lighter green for fade effect
+    }
+
+    // Draw the filled area first, then the line graph
+    window.draw(fillGraph);
+    window.draw(lineGraph);
+}
+
+
+std::string formatFloat(float value) {
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(2) << value;
+    return stream.str();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::printmem(sf::RenderWindow &window)
+{
+    float margine = static_cast<float>(window.getSize().y * 0.01f);
+
+    sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
+    pos.y += textPrepper(window, "[m] Memory Usage", pos).y;
+
+    sf::Vector2f graphSize = {
+        (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
+        static_cast<float>(window.getSize().y * 0.25f)};
+    sf::Vector2f graphPos = {_sidebarSize.x
+            + static_cast<float>(window.getSize().x * 0.05f),
+        pos.y};
+
+    createBackground(window, graphSize, graphPos, sf::Color::White, 2.f,
+            sf::Color::Magenta);
+    drawMemoryGraph(window, m_memory.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, graphPos.y}, false);
+    pos.y += graphSize.y;
+    pos.y += textPrepper(window, "\t\t\tMemory " + formatFloat(m_memory.getMemoryUsed()) + "%", pos).y;
+    pos.y += margine;
+    createBackground(window, graphSize, {graphPos.x, pos.y}, sf::Color::White, 2.f,
+            sf::Color::Magenta);
+    drawMemoryGraph(window, m_memory.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, pos.y}, true);
+    pos.y += graphSize.y;
+    pos.y += textPrepper(window, "\t\t\tMemory " + formatFloat(m_memory.getSwapUsed()) + "%", pos).y;
+    pos.y += margine;
+
+    sf::Vector2f memPos = pos;
+    sf::Vector2f memSize = pos;
+
+    memSize += textPrepper(window, "Memory Usage", memPos);
+    memPos.y = memSize.y;
+    memPos.y += margine;
+    float memMargine = memPos.y;
+
+    memPos.y += textPrepper(window, "Total: " + formatFloat(m_memory.getMemoryTotal() / 1024.f / 1024.f) + "GB", memPos).y;
+    memMargine = memPos.y - memMargine;
+    textPrepper(window, "Used: " + formatFloat((m_memory.getMemoryTotal() * m_memory.getMemoryUsed() / 100.f) / 1024.f / 1024.f) + "GB" + " (" + formatFloat(m_memory.getMemoryUsed()) + "%)", memPos);
+    memPos.y += memMargine;
+    textPrepper(window, "Free: " + formatFloat(m_memory.getMemoryFree() / 1024.f / 1024.f) + "GB", memPos);
+    memPos.y += memMargine;
+
+    sf::Vector2f swaPos = {memSize.x, pos.y};
+    swaPos.y += textPrepper(window, "Swap Usage", swaPos).y;
+    swaPos.y += margine;
+    float swapMargine = swaPos.y;
+
+    swaPos.y += textPrepper(window, "Total: " + formatFloat(m_memory.getSwapTotal() / 1024.f / 1024.f) + "GB", swaPos).y;
+    swapMargine = swaPos.y - swapMargine;
+    textPrepper(window, "Used: " + formatFloat((m_memory.getSwapTotal() * m_memory.getSwapUsed() / 100.f) / 1024.f / 1024.f) + "GB" + " (" + formatFloat(m_memory.getSwapUsed()) + "%)", swaPos);
+    swaPos.y += swapMargine;
+    textPrepper(window, "Free: " + formatFloat(m_memory.getSwapTotal() / 1024.f / 1024.f) + "GB", swaPos);
+    swaPos.y += swapMargine;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
@@ -343,11 +459,11 @@ int GraphicalMonitor::loop(void)
 
         window.clear();
 
-        // TEMPORARY
         PrintNavBar(window);
         if (m_selected == 0)
             printInfo(window);
-        // !TEMPORARY
+        if (m_selected == 2)
+            printmem(window);
 
         window.display();
     }
