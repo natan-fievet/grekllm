@@ -56,7 +56,7 @@ bool TextMonitor::getInput(void)
     if (c == (int)'d') m_disk.setEnabled(!m_disk.isEnabled());
     if (c == (int)'q') return (false);
     if (c == KEY_UP && m_selected > 0) { m_selected--; clear(); }
-    if (c == KEY_DOWN && m_selected < 5) { m_selected++; clear(); }
+    if (c == KEY_DOWN && m_selected < 7) { m_selected++; clear(); }
 
     return (true);
 }
@@ -66,11 +66,12 @@ void TextMonitor::printNavBar(WINDOW* Wcontent) const
 {
     static const char* menuItems[] = {
         "Information   ", "Processor     ",
-        "Memory        ", "Network       ",
-        "Disks         ", "Credits       "
+        "Memory        ", "Services      ",
+        "Network       ", "Disks         ",
+        "Battery       ", "Credits       ",
     };
     static const char* contentItems[] = {
-        "Information", "[p] Processor", "[m] Memory", "[n] Network", "[d] Disks", "Credits"
+        "Information", "[p] Processor", "[m] Memory", "Services", "[n] Network", "[d] Disks", "Battery", "Credits"
     };
     WINDOW *Wnavbar = subwin(stdscr, m_height - 2, 19, 1, 2);
 
@@ -384,7 +385,8 @@ void drawNetworkGraph(WINDOW* Wgraph, const std::list<NetworkModule::Data>& grap
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void TextMonitor::printNetwork(WINDOW* Wcontent) const {
+void TextMonitor::printNetwork(WINDOW* Wcontent) const
+{
     if (!m_network.isEnabled()) wattron(Wcontent, WA_DIM);
 
     mvwprintw(Wcontent, 24, 2, "Network Usage");
@@ -415,6 +417,7 @@ void TextMonitor::printNetwork(WINDOW* Wcontent) const {
     if (!m_network.isEnabled()) wattroff(Wcontent, WA_DIM);
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void TextMonitor::printDisks(WINDOW* Wcontent) const
 {
     (void)Wcontent;
@@ -444,6 +447,34 @@ void TextMonitor::printDisks(WINDOW* Wcontent) const
 
         mvwprintw(Wdisk, 1, width - 19, " %.f%% %.2f GB ", data[i].usage, data[i].total / 1024.f / 1024.f);
         if (!m_disk.isEnabled()) wattroff(Wdisk, WA_DIM);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void TextMonitor::printBattery(WINDOW *Wcontent) const
+{
+    (void)Wcontent;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void TextMonitor::printServices(WINDOW *Wcontent) const
+{
+    (void)Wcontent;
+    std::vector<ServiceModule::Data> services = m_service.getServices();
+    int numCols = 3;
+    int lenght = 0;
+    int colWidth = 50;
+    int i = 0;
+
+    for (const auto& service : services) {
+        int row = i / numCols;
+        int col = ((i % numCols) * colWidth) + lenght;
+
+        mvwprintw(Wcontent, row + 2, col + 2, " %s | %s ", service.name.c_str(), service.status.c_str());
+        lenght += (strlen(service.name.c_str()) + strlen(service.status.c_str()) + 6) / 2;
+        i += 1;
+        if (i % numCols == 0)
+            lenght = 0;
     }
 }
 
@@ -503,9 +534,11 @@ int TextMonitor::loop(void)
         if (m_selected == 0) printInformation(Wcontent);
         if (m_selected == 1) printProcessor(Wcontent);
         if (m_selected == 2) printMemory(Wcontent);
-        if (m_selected == 3) printNetwork(Wcontent);
-        if (m_selected == 4) printDisks(Wcontent);
-        if (m_selected == 5) printCredits(Wcontent);
+        if (m_selected == 3) printServices(Wcontent);
+        if (m_selected == 4) printNetwork(Wcontent);
+        if (m_selected == 5) printDisks(Wcontent);
+        if (m_selected == 6) printBattery(Wcontent);
+        if (m_selected == 7) printCredits(Wcontent);
 
         wrefresh(Wcontent);
     }
