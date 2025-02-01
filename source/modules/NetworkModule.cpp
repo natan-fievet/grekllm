@@ -30,6 +30,8 @@
 #include "modules/NetworkModule.hpp"
 #include <string>
 #include <fstream>
+#include <sstream>
+#include <chrono>
 
 ///////////////////////////////////////////////////////////////////////////////
 NetworkModule::NetworkModule(void)
@@ -57,61 +59,77 @@ bool NetworkModule::isEnabled(void) const
 ///////////////////////////////////////////////////////////////////////////////
 bool NetworkModule::refresh(void)
 {
-    int i = 0, a = 0;
-    std::string tmp, line;
-    std::ifstream file("/proc/net/dev", std::ios::in);
-
     if (!m_enabled)
-        return (false);
+        return false;
+
+    std::ifstream file("/proc/net/dev");
+    if (!file.is_open())
+        return false;
+
+    std::string line;
+    unsigned long long currentUp = 0, currentDown = 0;
+    static unsigned long long lastUp = 0, lastDown = 0;
+    static auto lastTime = std::chrono::steady_clock::now();
+
+    std::getline(file, line);
+    std::getline(file, line);
+
     while (std::getline(file, line)) {
-        if ((a = line.find(":")) != -1) {
-            a++;
-            for (; line[a] == ' '; a++);
-            for (; line[a] != ' '; a++)
-                tmp += line[a];
-            if (std::stoi(tmp) > 0) {
-                m_up = std::stoi(tmp);
-                tmp.clear();
-                for (; i != 7; i++) {
-                    for (; line[a] == ' '; a++);
-                    for (; line[a] != ' '; a++);
-                }
-                i = 0;
-                for (; line[a] == ' '; a++);
-                for (; line[a] != ' '; a++)
-                    tmp += line[a];
-                m_down = std::stoi(tmp);
-            }
-        }
-        tmp.clear();
+        size_t colonPos = line.find(':');
+        if (colonPos == std::string::npos)
+            continue;
+
+        std::istringstream ss(line.substr(colonPos + 1));
+        unsigned long long rxBytes, rxPackets, rxErrs, rxDrop, rxFifo, rxFrame, rxCompressed, rxMulticast;
+        unsigned long long txBytes, txPackets, txErrs, txDrop, txFifo, txColls, txCarrier, txCompressed;
+
+        ss >> rxBytes >> rxPackets >> rxErrs >> rxDrop >> rxFifo >> rxFrame >> rxCompressed >> rxMulticast
+           >> txBytes >> txPackets >> txErrs >> txDrop >> txFifo >> txColls >> txCarrier >> txCompressed;
+
+        currentDown += rxBytes;
+        currentUp += txBytes;
     }
+
+    auto currentTime = std::chrono::steady_clock::now();
+    double elapsed = std::chrono::duration<double>(currentTime - lastTime).count();
+
+    if (lastUp > 0 && lastDown > 0 && elapsed > 0) {
+        m_up = static_cast<float>((currentUp - lastUp) / elapsed / 1024.0);
+        m_down = static_cast<float>((currentDown - lastDown) / elapsed / 1024.0);
+
+        if (m_graph.size() >= 200)
+            m_graph.pop_back();
+        m_graph.push_front({m_up, m_down});
+    }
+
+    lastUp = currentUp;
+    lastDown = currentDown;
+    lastTime = currentTime;
+
     file.close();
-    if (m_graph.size() == 200)
-        m_graph.pop_back();
-    m_graph.push_front({m_up, m_down});
-    return (true);
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void NetworkModule::setUp(int up)
+void NetworkModule::setUp(float up)
 {
     m_up = up;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void NetworkModule::setDown(int down)
+void NetworkModule::setDown(float down)
 {
     m_down = down;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int NetworkModule::getUp(void) const
+float NetworkModule::getUp(void) const
 {
     return (m_up);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-int NetworkModule::getDown(void) const
+float NetworkModule::getDown(void) const
 {
     return (m_down);
 }

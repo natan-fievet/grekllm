@@ -29,6 +29,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "TextMonitor.hpp"
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 ///////////////////////////////////////////////////////////////////////////////
 TextMonitor::TextMonitor(void)
@@ -210,15 +212,206 @@ void TextMonitor::printProcessor(WINDOW* Wcontent) const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void TextMonitor::printMemory(WINDOW* Wcontent) const
+void drawMemoryGraph(WINDOW* Wgraph, const std::list<MemoryModule::Data>& graph, int width, int height, bool isSwap, float current)
 {
-    (void)Wcontent;
+    if (graph.empty()) {
+        for (int y = 1; y < height - 1; y++) {
+            for (int x = 1; x < width - 1; x++) {
+                mvwaddch(Wgraph, y, x, ' ');
+            }
+        }
+        return;
+    }
+
+    const int graphHeight = height - 2;
+    const int graphWidth = width - 2;
+
+    std::vector<std::vector<char>> buffer(graphHeight, std::vector<char>(graphWidth, ' '));
+    int dataPoints = std::min(static_cast<int>(graph.size()), graphWidth);
+
+    std::vector<float> values;
+    auto it = graph.end();
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        values.insert(values.begin(), isSwap ? it->swap : it->mem);
+        if (it == graph.begin()) break;
+    }
+
+    for (int x = 0; x < (int)values.size(); x++) {
+        float value = values[x];
+        int barHeight = static_cast<int>((value / 100.0) * (graphHeight - 1));
+        barHeight = std::min(barHeight, graphHeight - 1);
+        
+        for (int y = 0; y < barHeight; y++) {
+            int invertedY = graphHeight - 1 - y;
+            
+            if (y == barHeight - 1) {
+                buffer[invertedY][x] = '^';
+            } else if (value > 75) {
+                buffer[invertedY][x] = '#';
+            } else if (value > 50) {
+                buffer[invertedY][x] = '=';
+            } else if (value > 25) {
+                buffer[invertedY][x] = '-';
+            } else {
+                buffer[invertedY][x] = '.';
+            }
+        }
+    }
+
+    mvwprintw(Wgraph, 1, 1, "100%%");
+    mvwprintw(Wgraph, height/2, 1, "50%%");
+    mvwprintw(Wgraph, height-2, 1, "0%%");
+
+    for (int y = 0; y < graphHeight; y++) {
+        for (int x = 0; x < graphWidth; x++) {
+            mvwaddch(Wgraph, y + 1, x + 1, buffer[y][x]);
+        }
+    }
+
+    mvwprintw(Wgraph, height-1, 1, " %.2f%% ", current);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void TextMonitor::printNetwork(WINDOW* Wcontent) const
+void TextMonitor::printMemory(WINDOW* Wcontent) const
 {
-    (void)Wcontent;
+    if (!m_memory.isEnabled()) wattron(Wcontent, WA_DIM);
+    
+    mvwprintw(Wcontent, 24, 2, "Memory Usage");
+    mvwprintw(Wcontent, 26, 2, "Total: %.2f GB", m_memory.getMemoryTotal() / 1024.f / 1024.f);
+    mvwprintw(Wcontent, 27, 2, "Used:  %.2f GB (%.1f%%)", 
+        (m_memory.getMemoryTotal() * m_memory.getMemoryUsed() / 100.f) / 1024.f / 1024.f,
+        m_memory.getMemoryUsed());
+    mvwprintw(Wcontent, 28, 2, "Free:  %.2f GB", m_memory.getMemoryFree() / 1024.f / 1024.f);
+    
+    mvwprintw(Wcontent, 24, 32, "Swap Usage");
+    mvwprintw(Wcontent, 26, 32, "Total: %.2f GB", m_memory.getSwapTotal() / 1024.f / 1024.f);
+    mvwprintw(Wcontent, 27, 32, "Used:  %.2f GB (%.1f%%)",
+        (m_memory.getSwapTotal() * m_memory.getSwapUsed() / 100.f) / 1024.f / 1024.f,
+        m_memory.getSwapUsed());
+    mvwprintw(Wcontent, 28, 32, "Free:  %.2f GB", m_memory.getSwapFree() / 1024.f / 1024.f);
+
+    int width = m_width - 25;
+    int graphHeight = 10;
+    
+    WINDOW* WmemGraph = subwin(stdscr, graphHeight, width, 3, 23);
+    std::list<MemoryModule::Data> graph = m_memory.getGraph();
+
+    wclear(WmemGraph);
+    if (!m_memory.isEnabled()) wattron(WmemGraph, WA_DIM);
+    box(WmemGraph, ACS_VLINE, ACS_HLINE);
+    mvwprintw(WmemGraph, 0, 2, " Memory Usage ");
+    drawMemoryGraph(WmemGraph, graph, width, graphHeight, false, m_memory.getMemoryUsed());
+    if (!m_memory.isEnabled()) wattroff(WmemGraph, WA_DIM);
+
+    WINDOW* WswapGraph = subwin(stdscr, graphHeight, width, graphHeight + 4, 23);
+    wclear(WswapGraph);
+    if (!m_memory.isEnabled()) wattron(WswapGraph, WA_DIM);
+    box(WswapGraph, ACS_VLINE, ACS_HLINE);
+    mvwprintw(WswapGraph, 0, 2, " Swap Usage ");
+    drawMemoryGraph(WswapGraph, graph, width, graphHeight, true, m_memory.getSwapUsed());
+    if (!m_memory.isEnabled()) wattroff(WswapGraph, WA_DIM);
+
+    if (!m_memory.isEnabled()) wattroff(Wcontent, WA_DIM);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void drawNetworkGraph(WINDOW* Wgraph, const std::list<NetworkModule::Data>& graph, int width, int height, bool isUpload, float current)
+{
+    if (graph.empty()) {
+        for (int y = 1; y < height - 1; y++) {
+            for (int x = 1; x < width - 1; x++) {
+                mvwaddch(Wgraph, y, x, ' ');
+            }
+        }
+        return;
+    }
+
+    const int graphHeight = height - 2;
+    const int graphWidth = width - 2;
+
+    float maxValue = 0;
+    for (const auto& data : graph) {
+        maxValue = std::max(maxValue, isUpload ? data.up : data.down);
+    }
+    maxValue = std::ceil(maxValue / 10.0) * 10.0;
+
+    std::vector<std::vector<char>> buffer(graphHeight, std::vector<char>(graphWidth, ' '));
+    int dataPoints = std::min(static_cast<int>(graph.size()), graphWidth);
+
+    std::vector<float> values;
+    auto it = graph.end();
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        values.insert(values.begin(), isUpload ? it->up : it->down);
+        if (it == graph.begin()) break;
+    }
+
+    for (int x = 0; x < (int)values.size(); x++) {
+        float value = values[x];
+        int barHeight = static_cast<int>((value / maxValue) * (graphHeight - 1));
+        barHeight = std::min(barHeight, graphHeight - 1);
+        
+        for (int y = 0; y < barHeight; y++) {
+            int invertedY = graphHeight - 1 - y;
+            
+            if (y == barHeight - 1) {
+                buffer[invertedY][x] = '^';
+            } else if (value > (maxValue * 0.75)) {
+                buffer[invertedY][x] = '#';
+            } else if (value > (maxValue * 0.5)) {
+                buffer[invertedY][x] = '=';
+            } else if (value > (maxValue * 0.25)) {
+                buffer[invertedY][x] = '-';
+            } else {
+                buffer[invertedY][x] = '.';
+            }
+        }
+    }
+
+    mvwprintw(Wgraph, 1, 1, "%.0f", maxValue);
+    mvwprintw(Wgraph, height/2, 1, "%.0f", maxValue/2);
+    mvwprintw(Wgraph, height-2, 1, "0");
+
+    for (int y = 0; y < graphHeight; y++) {
+        for (int x = 0; x < graphWidth; x++) {
+            mvwaddch(Wgraph, y + 1, x + 1, buffer[y][x]);
+        }
+    }
+
+    mvwprintw(Wgraph, height-1, 1, " %.2f KB/s ", current);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void TextMonitor::printNetwork(WINDOW* Wcontent) const {
+    if (!m_network.isEnabled()) wattron(Wcontent, WA_DIM);
+
+    mvwprintw(Wcontent, 24, 2, "Network Usage");
+    mvwprintw(Wcontent, 26, 2, "Upload:   %.2f KB/s", m_network.getUp());
+    mvwprintw(Wcontent, 27, 2, "Download: %.2f KB/s", m_network.getDown());
+
+    int width = m_width - 25;
+    int graphHeight = 10;
+    
+    WINDOW* WupGraph = subwin(stdscr, graphHeight, width, 3, 23);
+    std::list<NetworkModule::Data> graph = m_network.getGraph();
+
+    wclear(WupGraph);
+    if (!m_network.isEnabled()) wattron(WupGraph, WA_DIM);
+    box(WupGraph, ACS_VLINE, ACS_HLINE);
+    mvwprintw(WupGraph, 0, 2, " Upload (KB/s) ");
+    drawNetworkGraph(WupGraph, graph, width, graphHeight, true, m_network.getUp());
+    if (!m_network.isEnabled()) wattroff(WupGraph, WA_DIM);
+
+    WINDOW* WdownGraph = subwin(stdscr, graphHeight, width, graphHeight + 4, 23);
+    wclear(WdownGraph);
+    if (!m_network.isEnabled()) wattron(WdownGraph, WA_DIM);
+    box(WdownGraph, ACS_VLINE, ACS_HLINE);
+    mvwprintw(WdownGraph, 0, 2, " Download (KB/s) ");
+    drawNetworkGraph(WdownGraph, graph, width, graphHeight, false, m_network.getDown());
+    if (!m_network.isEnabled()) wattroff(WdownGraph, WA_DIM);
+
+    if (!m_network.isEnabled()) wattroff(Wcontent, WA_DIM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
