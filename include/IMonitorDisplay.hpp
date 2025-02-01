@@ -41,6 +41,7 @@
 #include "modules/DiskModule.hpp"
 #include "modules/ProcessModule.hpp"
 #include "modules/ServiceModule.hpp"
+#include "modules/BatteryModule.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Utility class to handle module displaying
@@ -61,6 +62,7 @@ protected:
     DiskModule m_disk;          //<!
     ProcessModule m_process;    //<!
     ServiceModule m_service;    //<!
+    BatteryModule m_battery;
 
 public:
     ///////////////////////////////////////////////////////////////////////////
