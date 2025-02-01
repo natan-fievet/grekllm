@@ -86,9 +86,9 @@ bool NetworkModule::refresh(void)
         tmp.clear();
     }
     file.close();
-    if (m_graph.size() == 100)
-        m_graph.pop();
-    m_graph.push({m_up, m_down});
+    if (m_graph.size() == 200)
+        m_graph.pop_back();
+    m_graph.push_front({m_up, m_down});
     return (true);
 }
 
@@ -117,7 +117,7 @@ int NetworkModule::getDown(void) const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-std::queue<NetworkModule::Data> NetworkModule::getGraph(void) const
+std::list<NetworkModule::Data> NetworkModule::getGraph(void) const
 {
     return (m_graph);
 }

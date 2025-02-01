@@ -35,7 +35,7 @@
 #include "IMonitorModule.hpp"
 #include <map>
 #include <string>
-#include <queue>
+#include <list>
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Memory's related module
@@ -61,7 +61,7 @@ private:
     int m_swapFree;                         //<!
     float m_swapUsed;                       //<!
     bool m_enabled;                         //<!
-    std::queue<Data> m_graph;               //<!
+    std::list<Data> m_graph;                //<!
 
 public:
     ///////////////////////////////////////////////////////////////////////////
@@ -111,5 +111,5 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-    std::queue<Data> getGraph(void) const;
+    std::list<Data> getGraph(void) const;
 };

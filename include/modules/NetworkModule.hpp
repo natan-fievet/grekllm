@@ -33,7 +33,7 @@
 // Dependencies
 ///////////////////////////////////////////////////////////////////////////////
 #include "IMonitorModule.hpp"
-#include <queue>
+#include <list>
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Network's related module
@@ -54,7 +54,7 @@ private:
     int m_up;                   //<! Network up value
     int m_down;                 //<! Network down value
     bool m_enabled;             //<! Module enabled status
-    std::queue<Data> m_graph;   //<! Module graph data
+    std::list<Data> m_graph;    //<! Module graph data
 
 public:
     ///////////////////////////////////////////////////////////////////////////
@@ -96,5 +96,5 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-    std::queue<Data> getGraph(void) const;
+    std::list<Data> getGraph(void) const;
 };
