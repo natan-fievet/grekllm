@@ -53,7 +53,7 @@ void BatteryModule::setEnabled(bool enabled)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-std::string BatteryModule::getBattery(void) const
+std::string BatteryModule::getCapacity(void) const
 {
     if (m_battery.empty())
         return "";
@@ -61,7 +61,7 @@ std::string BatteryModule::getBattery(void) const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void BatteryModule::setBattery(const std::string& battery)
+void BatteryModule::setCapacity(const std::string& battery)
 {
     if (m_battery.empty())
         m_battery.push_back(Data{});
@@ -108,4 +108,9 @@ bool BatteryModule::refresh(void)
     setValueFromFile("status", m_battery[0].m_status);
     setValueFromFile("technology", m_battery[0].m_technology);
     return true;
+}
+
+std::vector<BatteryModule::Data> BatteryModule::getBattery(void) const
+{
+    return (m_battery);
 }
