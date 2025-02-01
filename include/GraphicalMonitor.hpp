@@ -43,7 +43,6 @@ struct Button {
     sf::Text text;
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Utility class to handle graphical monitor
 ///////////////////////////////////////////////////////////////////////////////
@@ -55,7 +54,9 @@ private:
     ///////////////////////////////////////////////////////////////////////////
     size_t m_selected = 0;
     sf::Font m_font;
-    std::vector<Button> m_buttons; // Store all buttons here
+    std::vector<Button> m_buttons;// Store all buttons here
+    sf::Vector2f _sidebarSize;
+    sf::Vector2f _titlecardSize;
 
 public:
     ///////////////////////////////////////////////////////////////////////////
@@ -83,17 +84,47 @@ public:
     void createBackground(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor) const;
 
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    void drawTextBox(sf::RenderWindow &window, sf::RectangleShape &rect,
+        sf::Text &text, const sf::Vector2f &size, const sf::Vector2f &pos,
+        sf::Color fillColor, const std::string &textString);
+
     void textbox(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor,
         const std::string &textString);
 
-    void textbox(sf::RenderWindow &window,
-        const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
-        const std::string &textString, float outline,
-        sf::Color outlineColor) const;
-    void backgroundBuild(sf::RenderWindow &window) const;
+    void button(sf::RenderWindow &window, const sf::Vector2f &size,
+        const sf::Vector2f &pos, sf::Color fillColor,
+        const std::string &textString);
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-    void handleInput(sf::Event event);
+    void textbox(sf::RenderWindow &window, const sf::Vector2f &size,
+        const sf::Vector2f &pos, sf::Color fillColor,
+        const std::string &textString, float outline,
+        sf::Color outlineColor) const;
+
+    void backgroundBuild(sf::RenderWindow &window);
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    void handleInput(sf::Event event, sf::RenderWindow &window);
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    void handlekeys(sf::Event event, sf::RenderWindow &window);
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    void handlemouse(sf::Event event);
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    void printInfo(sf::RenderWindow &window);
+
+    sf::Vector2f textPrepper(sf::RenderWindow &window, const std::string words,
+        sf::Vector2f pos);
+    sf::Vector2f subTitle(sf::RenderWindow &window, const std::string subtitle,
+        float yPos);
 };

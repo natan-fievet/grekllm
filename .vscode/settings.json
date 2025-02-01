@@ -58,6 +58,7 @@
     "typeinfo": "cpp",
     "variant": "cpp",
     "list": "cpp",
-    "cinttypes": "cpp"
+    "cinttypes": "cpp",
+    "text_encoding": "cpp"
   }
 }
