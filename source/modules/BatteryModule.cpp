@@ -55,14 +55,19 @@ void BatteryModule::setEnabled(bool enabled)
 ///////////////////////////////////////////////////////////////////////////////
 std::string BatteryModule::getBattery(void) const
 {
-    return (m_battery.m_capacity + "%");
+    if (m_battery.empty())
+        return "";
+    return m_battery[0].m_capacity + "%";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 void BatteryModule::setBattery(const std::string& battery)
 {
-    m_battery.m_capacity = battery;
+    if (m_battery.empty())
+        m_battery.push_back(Data{});
+    m_battery[0].m_capacity = battery;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 bool BatteryModule::refresh(void)
@@ -76,6 +81,7 @@ bool BatteryModule::refresh(void)
         path = "/sys/class/power_supply/BAT1/";
     else
         return false;
+
     auto setValueFromFile = [&](const std::string &filename, std::string& field) {
         std::ifstream file(path + filename);
         if (file) {
@@ -83,21 +89,23 @@ bool BatteryModule::refresh(void)
             file.close();
         }
     };
-    setValueFromFile("capacity", m_battery.m_capacity);
-    setValueFromFile("capacity_level", m_battery.m_capacity_level);
-    setValueFromFile("charge_full_design", m_battery.m_charge_full_design);
-    setValueFromFile("charge_full", m_battery.m_charge_full);
-    setValueFromFile("charge_now", m_battery.m_charge_now);
-    setValueFromFile("current_now", m_battery.m_current_now);
-    setValueFromFile("manufacturer", m_battery.m_manufacturer);
-    setValueFromFile("serial_number", m_battery.m_serial_number);
-    setValueFromFile("type", m_battery.m_type);
-    setValueFromFile("device", m_battery.m_device);
-    setValueFromFile("voltage_min_design", m_battery.m_voltage_min_design);
-    setValueFromFile("voltage_now", m_battery.m_voltage_now);
-    setValueFromFile("model_name", m_battery.m_model_name);
-    setValueFromFile("present", m_battery.m_present);
-    setValueFromFile("status", m_battery.m_status);
-    setValueFromFile("technology", m_battery.m_technology);
+    if (m_battery.empty())
+        m_battery.push_back(Data{});
+    setValueFromFile("capacity", m_battery[0].m_capacity);
+    setValueFromFile("capacity_level", m_battery[0].m_capacity_level);
+    setValueFromFile("charge_full_design", m_battery[0].m_charge_full_design);
+    setValueFromFile("charge_full", m_battery[0].m_charge_full);
+    setValueFromFile("charge_now", m_battery[0].m_charge_now);
+    setValueFromFile("current_now", m_battery[0].m_current_now);
+    setValueFromFile("manufacturer", m_battery[0].m_manufacturer);
+    setValueFromFile("serial_number", m_battery[0].m_serial_number);
+    setValueFromFile("type", m_battery[0].m_type);
+    setValueFromFile("alarm", m_battery[0].m_alarm);
+    setValueFromFile("voltage_min_design", m_battery[0].m_voltage_min_design);
+    setValueFromFile("voltage_now", m_battery[0].m_voltage_now);
+    setValueFromFile("model_name", m_battery[0].m_model_name);
+    setValueFromFile("present", m_battery[0].m_present);
+    setValueFromFile("status", m_battery[0].m_status);
+    setValueFromFile("technology", m_battery[0].m_technology);
     return true;
 }

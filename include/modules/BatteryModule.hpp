@@ -36,6 +36,7 @@
 #include <string.h>
 #include <fstream>
 #include <filesystem>
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Battery's related module
@@ -59,7 +60,7 @@ public:
         std::string m_manufacturer;
         std::string m_serial_number;
         std::string m_type;
-        std::string m_device;
+        std::string m_alarm;
         std::string m_voltage_min_design;
         std::string m_voltage_now;
         std::string m_model_name;
@@ -72,7 +73,7 @@ private:
     ///////////////////////////////////////////////////////////////////////////
     // Private properties
     ///////////////////////////////////////////////////////////////////////////
-    Data m_battery;
+    std::vector<Data> m_battery;
     bool m_enabled;
 
 public:
