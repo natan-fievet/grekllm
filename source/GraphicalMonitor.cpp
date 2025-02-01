@@ -328,6 +328,15 @@ void drawGraph(sf::RenderWindow &window, const std::vector<float> &values,
     window.draw(lineGraph);
 }
 
+const size_t MAX_GRAPH_POINTS = 200; // Adjust to match your screen width
+
+void addDataPoint(std::list<float> &graph, float newValue) {
+    graph.push_back(newValue);
+    if (graph.size() > MAX_GRAPH_POINTS) {
+        graph.pop_front(); // Remove oldest value to maintain size
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::drawCPUGraph(sf::RenderWindow &window, const std::list<double> &graph,
                   const sf::Vector2f &size, const sf::Vector2f &position)
@@ -441,30 +450,90 @@ void GraphicalMonitor::printmem(sf::RenderWindow &window)
     sf::Vector2f memSize = pos;
 
     memSize += textPrepper(window, "Memory Usage", memPos);
-    memPos.y = memSize.y;
-    memPos.y += margine;
-    float memMargine = memPos.y;
-
-    memPos.y += textPrepper(window, "Total: " + formatFloat(m_memory.getMemoryTotal() / 1024.f / 1024.f) + "GB", memPos).y;
-    memMargine = memPos.y - memMargine;
+    memPos.y += margine *4;
+    textPrepper(window, "Total: " + formatFloat(m_memory.getMemoryTotal() / 1024.f / 1024.f) + "GB", memPos);
+    memPos.y += margine *3;
     textPrepper(window, "Used: " + formatFloat((m_memory.getMemoryTotal() * m_memory.getMemoryUsed() / 100.f) / 1024.f / 1024.f) + "GB" + " (" + formatFloat(m_memory.getMemoryUsed()) + "%)", memPos);
-    memPos.y += memMargine;
+    memPos.y += margine *3;
     textPrepper(window, "Free: " + formatFloat(m_memory.getMemoryFree() / 1024.f / 1024.f) + "GB", memPos);
-    memPos.y += memMargine;
+
 
     sf::Vector2f swaPos = {memSize.x, pos.y};
-    swaPos.y += textPrepper(window, "Swap Usage", swaPos).y;
-    swaPos.y += margine;
-    float swapMargine = swaPos.y;
-
-    swaPos.y += textPrepper(window, "Total: " + formatFloat(m_memory.getSwapTotal() / 1024.f / 1024.f) + "GB", swaPos).y;
-    swapMargine = swaPos.y - swapMargine;
+    textPrepper(window, "Swap Usage", swaPos).y;
+    swaPos.y += margine * 4;
+    textPrepper(window, "Total: " + formatFloat(m_memory.getSwapTotal() / 1024.f / 1024.f) + "GB", swaPos);
+        swaPos.y += margine * 3;
     textPrepper(window, "Used: " + formatFloat((m_memory.getSwapTotal() * m_memory.getSwapUsed() / 100.f) / 1024.f / 1024.f) + "GB" + " (" + formatFloat(m_memory.getSwapUsed()) + "%)", swaPos);
-    swaPos.y += swapMargine;
+    swaPos.y += margine * 3;
     textPrepper(window, "Free: " + formatFloat(m_memory.getSwapTotal() / 1024.f / 1024.f) + "GB", swaPos);
-    swaPos.y += swapMargine;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::drawNetworkGraph(sf::RenderWindow &window, const std::list<NetworkModule::Data> &graph,
+    const sf::Vector2f &size, const sf::Vector2f &position, bool isUpload)
+{
+    if (graph.empty()) return;
+
+    std::vector<float> values;
+    auto it = graph.end();
+    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+
+    // Find the max value to scale the graph correctly
+    float maxValue = 0;
+    for (const auto &data : graph) {
+        maxValue = std::max(maxValue, isUpload ? data.up : data.down);
+    }
+    maxValue = std::ceil(maxValue / 10.0f) * 10.0f; // Round up to the nearest multiple of 10
+
+    // Convert data into a float list, scaled to percentage
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        float value = isUpload ? it->up : it->down;
+        values.insert(values.begin(), (maxValue > 0) ? (value / maxValue * 100.f) : 0.f); // Scale to 0-100%
+        if (it == graph.begin()) break;
+    }
+
+    sf::Color line = (m_network.isEnabled()) ? sf::Color::Yellow : sf::Color(64, 64, 64);
+    sf::Color fill = (m_network.isEnabled()) ? sf::Color(255, 0, 0, 150) : sf::Color(128, 128, 128);
+
+    drawGraph(window, values, size, position, line, fill);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::printNetwork(sf::RenderWindow &window)
+{
+    float margine = static_cast<float>(window.getSize().y * 0.01f);
+
+    sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
+    pos.y += textPrepper(window, "[n] Network", pos).y;
+
+    sf::Vector2f graphSize = {
+        (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
+        static_cast<float>(window.getSize().y * 0.25f)};
+    sf::Vector2f graphPos = {_sidebarSize.x
+            + static_cast<float>(window.getSize().x * 0.05f),
+        pos.y};
+
+    createBackground(window, graphSize, graphPos, sf::Color::White, 2.f,
+            sf::Color::Yellow);
+    drawNetworkGraph(window, m_network.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, graphPos.y}, false);
+    pos.y += graphSize.y;
+    pos.y += textPrepper(window, "\t\t\tUpload: " + formatFloat(m_network.getUp()) + " Kb/s", pos).y;
+    pos.y += margine;
+    createBackground(window, graphSize, {graphPos.x, pos.y}, sf::Color::White, 2.f,
+            sf::Color::Yellow);
+    drawNetworkGraph(window, m_network.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, pos.y}, true);
+    pos.y += graphSize.y;
+    pos.y += textPrepper(window, "\t\t\tDownload: " + formatFloat(m_network.getDown()) + " Kb/s", pos).y;
+    pos.y += margine * 2;
+
+    textPrepper(window, "Network Usage", pos);
+    pos.y += margine * 4;
+    textPrepper(window, std::string("Upload: ") + formatFloat(m_network.getUp()) + " Kb/s", pos);
+    pos.y += margine * 3;
+    textPrepper(window, std::string("Download: ") + formatFloat(m_network.getDown()) + " Kb/s", pos);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -537,6 +606,8 @@ int GraphicalMonitor::loop(void)
             printProcessor(window);
         if (m_selected == 2)
             printmem(window);
+        if (m_selected == 3)
+            printNetwork(window);
 
         window.display();
     }

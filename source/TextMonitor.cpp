@@ -56,10 +56,9 @@ bool TextMonitor::getInput(void)
     if (c == (int)'d') m_disk.setEnabled(!m_disk.isEnabled());
     if (c == (int)'e') m_process.setEnabled(!m_process.isEnabled());
     if (c == (int)'s') m_service.setEnabled(!m_service.isEnabled());
-    if (c == (int)'b') m_battery.setEnabled(!m_battery.isEnabled());
     if (c == (int)'q') return (false);
     if (c == KEY_UP && m_selected > 0) { m_selected--; clear(); }
-    if (c == KEY_DOWN && m_selected < 8) { m_selected++; clear(); }
+    if (c == KEY_DOWN && m_selected < 7) { m_selected++; clear(); }
 
     return (true);
 }
@@ -69,17 +68,12 @@ void TextMonitor::printNavBar(WINDOW* Wcontent) const
 {
     static const char* menuItems[] = {
         "Information   ", "Processor     ",
-        "Memory        ", "Processus     ",
-        "Services      ", "Network       ",
-        "Disks         ", "Battery       ",
-        "Credits       ",
+        "Memory        ", "Services      ",
+        "Network       ", "Disks         ",
+        "Battery       ", "Credits       ",
     };
     static const char* contentItems[] = {
-        "Information", "[p] Processor",
-        "[m] Memory", "[e] Processus",
-        "[s] Services", "[n] Network",
-        "[d] Disks", "[b] Battery",
-        "Credits"
+        "Information", "[p] Processor", "[m] Memory", "[e] Processus", "[s] Services", "[n] Network", "[d] Disks", "Battery", "Credits"
     };
     WINDOW *Wnavbar = subwin(stdscr, m_height - 2, 19, 1, 2);
 
@@ -495,64 +489,23 @@ void TextMonitor::printBattery(WINDOW *Wcontent) const
 ///////////////////////////////////////////////////////////////////////////////
 void TextMonitor::printServices(WINDOW *Wcontent) const
 {
-    if (!m_service.isEnabled()) wattron(Wcontent, WA_DIM);
     (void)Wcontent;
     std::vector<ServiceModule::Data> services = m_service.getServices();
-
-    int height, width;
-    getmaxyx(Wcontent, height, width);
-
-    int numCols = 4;
-    int colWidth = (width - 20) / numCols;
-
-    int nameWidth = colWidth - 15;
-    if (nameWidth < 10) nameWidth = 10;
-
-    height = height;
+    int numCols = 3;
+    int lenght = 0;
+    int colWidth = 50;
     int i = 0;
+
     for (const auto& service : services) {
         int row = i / numCols;
-        int col = (i % numCols) * colWidth;
+        int col = ((i % numCols) * colWidth) + lenght;
 
-        std::string truncatedName = service.name;
-        if ((int)truncatedName.length() > nameWidth) {
-            truncatedName = truncatedName.substr(0, nameWidth - 3) + "...";
-        }
-        mvwprintw(Wcontent, row + 2, col + 2, "> %-*s | %-10s", nameWidth, truncatedName.c_str(), service.status.c_str());
-        i++;
+        mvwprintw(Wcontent, row + 2, col + 2, " %s | %s ", service.name.c_str(), service.status.c_str());
+        lenght += (strlen(service.name.c_str()) + strlen(service.status.c_str()) + 6) / 2;
+        i += 1;
+        if (i % numCols == 0)
+            lenght = 0;
     }
-    if (!m_service.isEnabled()) wattroff(Wcontent, WA_DIM);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void TextMonitor::printProcessus(WINDOW *Wcontent) const
-{
-    if (!m_process.isEnabled()) wattron(Wcontent, WA_DIM);
-    (void)Wcontent;
-    
-    std::vector<ProcessModule::Data> proccs = m_process.getProcesses();
-    int maxRows = m_height - 7;
-    int nameWidth = 20;
-    int i = 0;
-
-    mvwprintw(Wcontent, 2, 2, " %-8s %-8s %-5s %-5s %-8s %-8s %-8s %-s", 
-        "PID", "USER", "CPU%", "MEM%", "RES", "STATE", "TIME", "COMMAND");
-    mvwhline(Wcontent, 3, 2, '-', m_width - 24);
-
-    for (const auto& proc : proccs) {
-        if (i >= maxRows) break;
-
-        std::string truncatedCmd = proc.command;
-        if ((int)truncatedCmd.length() > nameWidth) {
-            truncatedCmd = truncatedCmd.substr(0, nameWidth - 3) + "...";
-        }
-
-        mvwprintw(Wcontent, i + 4, 2, " %-8d %-8s %-5.1f %-5.1f %-8s %-8i %-8s %-s",
-            proc.pid, proc.user.c_str(), proc.cpu, proc.mem,
-            proc.res.c_str(), proc.state, proc.time.c_str(), truncatedCmd.c_str());
-        i++;
-    }
-    if (!m_process.isEnabled()) wattroff(Wcontent, WA_DIM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -611,12 +564,11 @@ int TextMonitor::loop(void)
         if (m_selected == 0) printInformation(Wcontent);
         if (m_selected == 1) printProcessor(Wcontent);
         if (m_selected == 2) printMemory(Wcontent);
-        if (m_selected == 3) printProcessus(Wcontent);
-        if (m_selected == 4) printServices(Wcontent);
-        if (m_selected == 5) printNetwork(Wcontent);
-        if (m_selected == 6) printDisks(Wcontent);
-        if (m_selected == 7) printBattery(Wcontent);
-        if (m_selected == 8) printCredits(Wcontent);
+        if (m_selected == 3) printServices(Wcontent);
+        if (m_selected == 4) printNetwork(Wcontent);
+        if (m_selected == 5) printDisks(Wcontent);
+        if (m_selected == 6) printBattery(Wcontent);
+        if (m_selected == 7) printCredits(Wcontent);
 
         wrefresh(Wcontent);
     }

@@ -68,7 +68,8 @@ bool ServiceModule::refresh(void)
 
     std::array<char, 128> buffer;
     std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command, "r"), pclose);
+    using PipeDeleter = int (*)(FILE*);
+    std::unique_ptr<FILE, PipeDeleter> pipe(popen(command, "r"), pclose);
     if (!pipe) throw std::runtime_error("popen() failed!");
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
         result += buffer.data();
