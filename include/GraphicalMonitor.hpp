@@ -36,6 +36,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
+#include <vector>
+
+struct Button {
+    sf::RectangleShape rect;
+    sf::Text text;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Utility class to handle graphical monitor
@@ -47,6 +54,8 @@ private:
     // Private properties
     ///////////////////////////////////////////////////////////////////////////
     size_t m_selected = 0;
+    sf::Font m_font;
+    std::vector<Button> m_buttons; // Store all buttons here
 
 public:
     ///////////////////////////////////////////////////////////////////////////
@@ -64,7 +73,7 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-    void PrintNavBar(sf::RenderWindow &window) const;
+    void PrintNavBar(sf::RenderWindow &window);
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
@@ -76,7 +85,7 @@ public:
 
     void textbox(sf::RenderWindow &window, const sf::Vector2f &size,
         const sf::Vector2f &pos, sf::Color fillColor,
-        const std::string &textString) const;
+        const std::string &textString);
 
     void textbox(sf::RenderWindow &window,
         const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
