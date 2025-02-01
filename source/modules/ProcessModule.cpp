@@ -28,6 +28,12 @@
 // Dependencies
 ///////////////////////////////////////////////////////////////////////////////
 #include "modules/ProcessModule.hpp"
+#include <fstream>
+#include <cstdlib>
+#include <sstream>
+#include <array>
+#include <iostream>
+#include <memory>
 
 ///////////////////////////////////////////////////////////////////////////////
 ProcessModule::ProcessModule(void)
@@ -55,6 +61,36 @@ bool ProcessModule::isEnabled(void) const
 ///////////////////////////////////////////////////////////////////////////////
 bool ProcessModule::refresh(void)
 {
+    static const char* command = "/usr/bin/top -b -n 1 | /usr/bin/grep -E '^[ ]*[0-9]+'";
+
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command, "r"), pclose);
+    if (!pipe) throw std::runtime_error("popen() failed!");
+
+    m_data.clear();
+
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+        result += buffer.data();
+
+    std::istringstream iss(result);
+    std::string line;
+    while (std::getline(iss, line)) {
+        std::istringstream lineStream(line);
+        Data process;
+
+        lineStream >> process.pid >> process.user >> process.pr >> process.ni >> process.virt
+                   >> process.res >> process.shr >> process.state >> process.cpu >> process.mem
+                   >> process.time;
+
+        std::getline(lineStream, process.command);
+        process.command.erase(0, process.command.find_first_not_of(" "));
+
+
+        if (!process.command.empty())
+            m_data.push_back(process);
+    }
+
     return (true);
 }
 

@@ -46,7 +46,20 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     // Custom type
     ///////////////////////////////////////////////////////////////////////////
-    using Data = struct {};
+    using Data = struct {
+        int pid;                //<!
+        std::string user;       //<!
+        int pr;                 //<!
+        int ni;                 //<!
+        std::string virt;       //<!
+        std::string res;        //<!
+        std::string shr;        //<!
+        char state;             //<!
+        float cpu;              //<!
+        float mem;              //<!
+        std::string time;       //<!
+        std::string command;    //<!
+    };
 
 private:
     ///////////////////////////////////////////////////////////////////////////

@@ -57,13 +57,6 @@ int main(int argc, char *argv[])
     return (printHelp(84));
 }
 
-// #include "modules/UserModule.hpp"
-// #include "modules/TimeModule.hpp"
-// #include "modules/OsModule.hpp"
-// #include "modules/NetworkModule.hpp"
-// #include "modules/CpuModule.hpp"
-// #include "modules/MemoryModule.hpp"
-
 // int main(void)
 // {
 //     UserModule user;
@@ -134,6 +127,15 @@ int main(int argc, char *argv[])
 //     std::vector<ServiceModule::Data> services = service.getServices();
 //     for (size_t i = 0; i < services.size(); i++) {
 //         std::cout << services[i].name << " - " << services[i].status << std::endl;
+//     }
+
+//     process.refresh();
+//     std::cout << "PROCES_MODULE:" << std::endl;
+
+//     std::vector<ProcessModule::Data> prcs = process.getProcesses();
+
+//     for (size_t i = 0; i < prcs.size(); i++) {
+//         std::cout << prcs[i].command << " [" << prcs[i].pid <<  "]"  << std::endl;
 //     }
 
 //     return (0);
