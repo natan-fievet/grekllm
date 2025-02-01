@@ -417,7 +417,18 @@ void TextMonitor::printNetwork(WINDOW* Wcontent) const {
 ///////////////////////////////////////////////////////////////////////////////
 void TextMonitor::printCredits(WINDOW* Wcontent) const
 {
-    (void)Wcontent;
+    mvwprintw(Wcontent, 2, 3, "Made by:");
+    wattron(Wcontent, WA_DIM);  mvwprintw(Wcontent, 4, 5, "Mallory SCOTTON \t(mallory-scotton)"); wattroff(Wcontent, WA_DIM);
+    wattron(Wcontent, WA_BOLD); mvwprintw(Wcontent, 4, 5, "Mallory SCOTTON"); wattroff(Wcontent, WA_BOLD);
+
+    wattron(Wcontent, WA_DIM);  mvwprintw(Wcontent, 6, 5, "Hugo CATHELAIN \t(Hugo-Cathelain)"); wattroff(Wcontent, WA_DIM);
+    wattron(Wcontent, WA_BOLD); mvwprintw(Wcontent, 6, 5, "Hugo CATHELAIN"); wattroff(Wcontent, WA_BOLD);
+
+    wattron(Wcontent, WA_DIM);  mvwprintw(Wcontent, 8, 5, "Nathan FIEVET \t(natan-fievet)"); wattroff(Wcontent, WA_DIM);
+    wattron(Wcontent, WA_BOLD); mvwprintw(Wcontent, 8, 5, "Nathan FIEVET"); wattroff(Wcontent, WA_BOLD);
+
+    wattron(Wcontent, WA_DIM);  mvwprintw(Wcontent, 10, 5, "Ossan MSOILI \t(Omegalpha28)"); wattroff(Wcontent, WA_DIM);
+    wattron(Wcontent, WA_BOLD); mvwprintw(Wcontent, 10, 5, "Ossan MSOILI"); wattroff(Wcontent, WA_BOLD);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
