@@ -57,12 +57,12 @@ int main(int argc, char *argv[])
     return (printHelp(84));
 }
 
-// #include "modules/UserModule.hpp"
-// #include "modules/TimeModule.hpp"
-// #include "modules/OsModule.hpp"
-// #include "modules/NetworkModule.hpp"
-// #include "modules/CpuModule.hpp"
-// #include "modules/MemoryModule.hpp"
+#include "modules/UserModule.hpp"
+#include "modules/TimeModule.hpp"
+#include "modules/OsModule.hpp"
+#include "modules/NetworkModule.hpp"
+#include "modules/CpuModule.hpp"
+#include "modules/MemoryModule.hpp"
 
 // int main(void)
 // {
@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 //     NetworkModule network;
 //     CpuModule cpu;
 //     MemoryModule memory;
+//     DiskModule disk;
 
 //     user.refresh();
 //     std::cout << "USER_MODULE:" << std::endl;
@@ -112,6 +113,17 @@ int main(int argc, char *argv[])
 //     std::cout << "\tSwap Total: " << memory.getSwapTotal() << std::endl;
 //     std::cout << "\tSwap Free: " << memory.getSwapFree() << std::endl;
 //     std::cout << "\tSwap Used: " << memory.getSwapUsed() << std::endl;
+
+//     disk.refresh();
+//     std::vector<DiskModule::Data> disks = disk.getDisks();
+
+//     for (size_t i = 0; i < disks.size(); i++) {
+//         std::cout << disks[i].mountpoint << std::endl;
+//         std::cout << "\tAvailable: " << disks[i].available << std::endl;
+//         std::cout << "\tTotal: " << disks[i].total << std::endl;
+//         std::cout << "\tUsed: " << disks[i].used << std::endl;
+//         std::cout << "\tUsage: " << disks[i].usage << std::endl;
+//     }
 
 //     return (0);
 // }

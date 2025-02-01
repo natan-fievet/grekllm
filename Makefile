@@ -34,6 +34,7 @@ SOURCES			=	source/modules/UserModule.cpp \
 					source/modules/NetworkModule.cpp \
 					source/modules/CpuModule.cpp \
 					source/modules/MemoryModule.cpp \
+					source/modules/DiskModule.cpp \
 					source/IMonitorDisplay.cpp \
 					source/GraphicalMonitor.cpp \
 					source/TextMonitor.cpp \
