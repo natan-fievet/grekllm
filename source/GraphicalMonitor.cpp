@@ -231,6 +231,13 @@ sf::Vector2f GraphicalMonitor::textPrepper(sf::RenderWindow &window,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+std::string formatFloat(float value) {
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(2) << value;
+    return stream.str();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window)
 {
     static const char *menuItems[] = {"Information", "Processor", "Memory",
@@ -287,44 +294,33 @@ void GraphicalMonitor::printInfo(sf::RenderWindow &window)
     }
 }
 
-void drawMemoryGraph(sf::RenderWindow &window, const std::list<MemoryModule::Data> &graph,
-    const sf::Vector2f &size, const sf::Vector2f &position, bool isSwap)
+void drawGraph(sf::RenderWindow &window, const std::vector<float> &values,
+               const sf::Vector2f &size, const sf::Vector2f &position,
+               sf::Color lineColor, sf::Color fillColor)
 {
-    if (graph.empty()) return;
+    if (values.empty()) return;
 
-    sf::VertexArray lineGraph(sf::LineStrip, graph.size());
-    sf::VertexArray fillGraph(sf::TriangleStrip, graph.size() * 2);
+    sf::VertexArray lineGraph(sf::LineStrip, values.size());
+    sf::VertexArray fillGraph(sf::TriangleStrip, values.size() * 2);
 
-    float maxHeight = size.y; // Graph height
-    float maxWidth = size.x;  // Graph width
+    float maxHeight = size.y;
+    float maxWidth = size.x;
 
-    // Get the last `size.x` data points
-    std::vector<float> values;
-    auto it = graph.end();
-    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
-
-    for (int i = 0; i < dataPoints; ++i) {
-        --it;
-        values.insert(values.begin(), isSwap ? it->swap : it->mem);
-        if (it == graph.begin()) break;
-    }
-
-    // Normalize and map values to the graph size
     for (size_t i = 0; i < values.size(); i++) {
         float value = values[i]; // Value in percentage (0-100)
         float x = position.x + (i * (maxWidth / values.size()));
         float y = position.y + maxHeight - (value / 100.f * maxHeight);
 
-        // Line Graph (Top Border)
+        // Line Graph
         lineGraph[i].position = sf::Vector2f(x, y);
-        lineGraph[i].color = sf::Color::Green; // Customize color
+        lineGraph[i].color = lineColor;
 
-        // Filled Area (Triangle Strip)
+        // Filled Area
         fillGraph[i * 2].position = sf::Vector2f(x, y);
-        fillGraph[i * 2].color = sf::Color(0, 255, 0, 150); // Semi-transparent green
+        fillGraph[i * 2].color = fillColor;
 
         fillGraph[i * 2 + 1].position = sf::Vector2f(x, position.y + maxHeight);
-        fillGraph[i * 2 + 1].color = sf::Color(0, 255, 0, 50); // Lighter green for fade effect
+        fillGraph[i * 2 + 1].color = sf::Color(fillColor.r, fillColor.g, fillColor.b, 50); // Lighter fill color
     }
 
     // Draw the filled area first, then the line graph
@@ -332,12 +328,86 @@ void drawMemoryGraph(sf::RenderWindow &window, const std::list<MemoryModule::Dat
     window.draw(lineGraph);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::drawCPUGraph(sf::RenderWindow &window, const std::list<double> &graph,
+                  const sf::Vector2f &size, const sf::Vector2f &position)
+{
+    if (graph.empty()) return;
 
-std::string formatFloat(float value) {
-    std::ostringstream stream;
-    stream << std::fixed << std::setprecision(2) << value;
-    return stream.str();
+    std::vector<float> values;
+    auto it = graph.end();
+    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+
+    //convert data into a float list
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        values.insert(values.begin(), static_cast<float>(*it));
+        if (it == graph.begin()) break;
+    }
+
+    sf::Color line = (m_cpu.isEnabled()) ? sf::Color::Cyan : sf::Color(64, 64, 64);
+    sf::Color fill = (m_cpu.isEnabled()) ? sf::Color(0, 255, 255, 150) : sf::Color(128, 128, 128);
+    drawGraph(window, values, size, position, line, fill);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::printProcessor(sf::RenderWindow &window)
+{
+    float margine = static_cast<float>(window.getSize().y * 0.01f);
+    sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
+    pos.y += textPrepper(window, "[p] Processor", pos).y;
+
+    sf::Vector2f graphSize = {
+        (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
+        static_cast<float>(window.getSize().y * 0.5f)};
+    sf::Vector2f graphPos = {_sidebarSize.x
+            + static_cast<float>(window.getSize().x * 0.05f),
+        pos.y};
+    createBackground(window, graphSize, graphPos, sf::Color::White, 2.f,
+            sf::Color::Blue);
+    drawCPUGraph(window, m_cpu.getGraph(), graphSize, graphPos);
+    pos.y += graphSize.y;
+    pos.y += textPrepper(window, "\t\t\t" + formatFloat(m_cpu.getUsage()) + "%", pos).y;
+
+    pos.y += margine * 2;
+
+    textPrepper(window, std::string("vendor: ") + m_cpu.getProcs()[0]["vendorId"].c_str(), pos);
+    pos.y += margine * 4;
+    textPrepper(window,( std::string("CPU Model: ") + m_cpu.getProcs()[0]["modelName"].c_str()), pos);
+    pos.y += margine * 4;
+    textPrepper(window, std::string("CPU Cores: ") + m_cpu.getProcs()[0]["cpuCores"].c_str(), pos);
+    pos.y += margine * 4;
+    textPrepper(window, std::string("Cache Size: ") + m_cpu.getProcs()[0]["cacheSize"].c_str(), pos);
+    pos.y += margine * 4;
+    textPrepper(window, std::string("Physical Cores: ") + std::to_string(m_cpu.getProcs().size()), pos);
+    pos.y += margine * 4;
+    textPrepper(window, std::string("Address Sizes: ") + m_cpu.getProcs()[0]["addressSizes"].c_str(), pos);
+    pos.y += margine * 4;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::drawMemoryGraph(sf::RenderWindow &window, const std::list<MemoryModule::Data> &graph,
+                     const sf::Vector2f &size, const sf::Vector2f &position, bool isSwap)
+{
+    if (graph.empty()) return;
+
+    std::vector<float> values;
+    auto it = graph.end();
+    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+
+    //convert data into a float list
+    for (int i = 0; i < dataPoints; ++i) {
+        --it;
+        values.insert(values.begin(), isSwap ? it->swap : it->mem);
+        if (it == graph.begin()) break;
+    }
+
+    sf::Color line = (m_memory.isEnabled()) ? sf::Color::Green : sf::Color(64, 64, 64);
+    sf::Color fill = (m_memory.isEnabled()) ? sf::Color(0, 255, 0, 150) : sf::Color(128, 128, 128);
+    drawGraph(window, values, size, position, line, fill);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::printmem(sf::RenderWindow &window)
@@ -394,6 +464,7 @@ void GraphicalMonitor::printmem(sf::RenderWindow &window)
     textPrepper(window, "Free: " + formatFloat(m_memory.getSwapTotal() / 1024.f / 1024.f) + "GB", swaPos);
     swaPos.y += swapMargine;
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -462,6 +533,8 @@ int GraphicalMonitor::loop(void)
         PrintNavBar(window);
         if (m_selected == 0)
             printInfo(window);
+        if (m_selected == 1)
+            printProcessor(window);
         if (m_selected == 2)
             printmem(window);
 
