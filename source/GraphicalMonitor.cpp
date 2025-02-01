@@ -163,8 +163,8 @@ info:
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::backgroundBuild(sf::RenderWindow &window)
 {
-    static const char *contentItems[] = {"Information", "Processor", "Memory",
-        "Network", "Credits"};
+    static const char *contentItems[] = {"Information", "[p] Processor", "[m] Memory",
+        "[n] Network", "[d] Disk", "[c] Credits"};
 
     //side bar
     _sidebarSize = {static_cast<float>(window.getSize().x) * 0.22f,
@@ -241,7 +241,7 @@ std::string formatFloat(float value) {
 void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window)
 {
     static const char *menuItems[] = {"Information", "Processor", "Memory",
-        "Network", "Credits"};
+        "Network", "Disk", "Credits"};
 
     backgroundBuild(window);
     const sf::Vector2 buttonSize = {static_cast<float>(window.getSize().x)
@@ -364,7 +364,7 @@ void GraphicalMonitor::printProcessor(sf::RenderWindow &window)
 {
     float margine = static_cast<float>(window.getSize().y * 0.01f);
     sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
-    pos.y += textPrepper(window, "[p] Processor", pos).y;
+    pos.y += margine * 4;
 
     sf::Vector2f graphSize = {
         (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
@@ -424,8 +424,8 @@ void GraphicalMonitor::printmem(sf::RenderWindow &window)
     float margine = static_cast<float>(window.getSize().y * 0.01f);
 
     sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
-    pos.y += textPrepper(window, "[m] Memory Usage", pos).y;
-
+    pos.y += margine * 4;
+    
     sf::Vector2f graphSize = {
         (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
         static_cast<float>(window.getSize().y * 0.25f)};
@@ -506,8 +506,7 @@ void GraphicalMonitor::printNetwork(sf::RenderWindow &window)
     float margine = static_cast<float>(window.getSize().y * 0.01f);
 
     sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
-    pos.y += textPrepper(window, "[n] Network", pos).y;
-
+    pos.y += margine * 4;
     sf::Vector2f graphSize = {
         (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
         static_cast<float>(window.getSize().y * 0.25f)};
@@ -535,6 +534,54 @@ void GraphicalMonitor::printNetwork(sf::RenderWindow &window)
     textPrepper(window, std::string("Download: ") + formatFloat(m_network.getDown()) + " Kb/s", pos);
 }
 
+    // need to create a for loop. will use pair numbers for position.
+    // first box with outline. then we need second box with fill percentage third box with words
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::printDisk(sf::RenderWindow &window)
+{
+    sf::Vector2f margine = {static_cast<float>(window.getSize().x * 0.01f), static_cast<float>(window.getSize().y * 0.01f)};
+    
+    sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
+    pos.y += margine.y * 4;
+
+    std::vector<DiskModule::Data> data = m_disk.getDisks();
+    sf::Vector2f diskSize = {
+        (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.43f,
+        static_cast<float>(window.getSize().y * 0.05f)};
+
+    sf::Vector2f diskPos = {_sidebarSize.x
+        + static_cast<float>(window.getSize().x * 0.05f),
+        pos.y};
+
+    for (size_t i = 0; i < data.size(); i++){
+        sf::Vector2f temp = diskPos;
+        sf::Vector2f diskUsage = {diskSize.x * (data[i].usage /100.f) , diskSize.y};
+        sf::Color percentage;
+
+        if (data[i].usage <= 50)
+            percentage = sf::Color::Green;
+        else if (data[i].usage <= 75)
+            percentage = sf::Color(255, 121, 0);
+        else
+            percentage = sf::Color::Red;
+
+        if (i % 2 == 1){
+            temp.x += diskSize.x;
+            temp.x += margine.x * 3;
+        }
+        temp.y += textPrepper(window, data[i].mountpoint.c_str(), temp).y;
+
+
+        createBackground(window, diskSize, temp, sf::Color::White, 2.f, sf::Color::Black);
+        createBackground(window, diskUsage, temp, percentage);
+
+        if (i % 2 == 1){
+            diskPos.y += diskSize.y;
+            diskPos.y += margine.y * 4;
+        }
+    }
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
@@ -608,6 +655,8 @@ int GraphicalMonitor::loop(void)
             printmem(window);
         if (m_selected == 3)
             printNetwork(window);
+        if (m_selected == 4)
+            printDisk(window);
 
         window.display();
     }

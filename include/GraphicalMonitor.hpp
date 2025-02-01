@@ -81,6 +81,7 @@ public:
     void printProcessor(sf::RenderWindow &window);
     void printmem(sf::RenderWindow &window);
     void printNetwork(sf::RenderWindow &window);
+    void printDisk(sf::RenderWindow &window);
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
