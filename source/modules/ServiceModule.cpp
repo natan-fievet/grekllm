@@ -25,58 +25,79 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// Pragma
-///////////////////////////////////////////////////////////////////////////////
-#pragma once
-
-///////////////////////////////////////////////////////////////////////////////
 // Dependencies
 ///////////////////////////////////////////////////////////////////////////////
-#include "modules/CpuModule.hpp"
-#include "modules/MemoryModule.hpp"
-#include "modules/NetworkModule.hpp"
-#include "modules/OsModule.hpp"
-#include "modules/TimeModule.hpp"
-#include "modules/UserModule.hpp"
-#include "modules/DiskModule.hpp"
-#include "modules/ProcessModule.hpp"
 #include "modules/ServiceModule.hpp"
+#include <fstream>
+#include <cstdlib>
+#include <sstream>
+#include <array>
+#include <iostream>
+#include <memory>
 
 ///////////////////////////////////////////////////////////////////////////////
-/// \brief Utility class to handle module displaying
-///
+ServiceModule::ServiceModule(void)
+    : m_enabled(true)
+{}
+
 ///////////////////////////////////////////////////////////////////////////////
-class IMonitorDisplay
+ServiceModule::~ServiceModule()
 {
-protected:
-    ///////////////////////////////////////////////////////////////////////////
-    // Private properties
-    ///////////////////////////////////////////////////////////////////////////
-    CpuModule m_cpu;            //<!
-    MemoryModule m_memory;      //<!
-    NetworkModule m_network;    //<!
-    OsModule m_os;              //<!
-    TimeModule m_time;          //<!
-    UserModule m_user;          //<!
-    DiskModule m_disk;          //<!
-    ProcessModule m_process;    //<!
-    ServiceModule m_service;    //<!
+    m_enabled = false;
+}
 
-public:
-    ///////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
-    IMonitorDisplay(void) = default;
+///////////////////////////////////////////////////////////////////////////////
+void ServiceModule::setEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}
 
-    ///////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
-    virtual ~IMonitorDisplay() = default;
+///////////////////////////////////////////////////////////////////////////////
+bool ServiceModule::isEnabled(void) const
+{
+    return (m_enabled);
+}
 
-public:
-    ///////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
-    virtual int loop(void) = 0;
+///////////////////////////////////////////////////////////////////////////////
+bool ServiceModule::refresh(void)
+{
+    static const char* command = "systemctl list-units --type=service --all --no-pager --no-legend";
+    if (!m_enabled)
+        return (false);
+    m_data.clear();
 
-    ///////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
-    virtual void refresh(void);
-};
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command, "r"), pclose);
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+
+    std::istringstream iss(result);
+    std::string line;
+        while (std::getline(iss, line)) {
+        std::istringstream lineStream(line);
+        Data service;
+
+        std::string serviceNameWithDot;
+        lineStream >> serviceNameWithDot;
+
+        if (!serviceNameWithDot.empty() && serviceNameWithDot == "●") {
+            lineStream >> service.name;
+        } else service.name = serviceNameWithDot;
+
+        std::string status;
+        lineStream >> status;
+        service.status = status;
+
+        m_data.push_back(service);
+    }
+    return (true);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+std::vector<ServiceModule::Data> ServiceModule::getServices(void) const
+{
+    return (m_data);
+}

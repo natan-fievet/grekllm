@@ -57,12 +57,12 @@ int main(int argc, char *argv[])
     return (printHelp(84));
 }
 
-#include "modules/UserModule.hpp"
-#include "modules/TimeModule.hpp"
-#include "modules/OsModule.hpp"
-#include "modules/NetworkModule.hpp"
-#include "modules/CpuModule.hpp"
-#include "modules/MemoryModule.hpp"
+// #include "modules/UserModule.hpp"
+// #include "modules/TimeModule.hpp"
+// #include "modules/OsModule.hpp"
+// #include "modules/NetworkModule.hpp"
+// #include "modules/CpuModule.hpp"
+// #include "modules/MemoryModule.hpp"
 
 // int main(void)
 // {
@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
 //     CpuModule cpu;
 //     MemoryModule memory;
 //     DiskModule disk;
+//     ServiceModule service;
+//     ProcessModule process;
 
 //     user.refresh();
 //     std::cout << "USER_MODULE:" << std::endl;
@@ -117,12 +119,21 @@ int main(int argc, char *argv[])
 //     disk.refresh();
 //     std::vector<DiskModule::Data> disks = disk.getDisks();
 
+//     std::cout << "DISK_MODULE:" << std::endl;
 //     for (size_t i = 0; i < disks.size(); i++) {
 //         std::cout << disks[i].mountpoint << std::endl;
 //         std::cout << "\tAvailable: " << disks[i].available << std::endl;
 //         std::cout << "\tTotal: " << disks[i].total << std::endl;
 //         std::cout << "\tUsed: " << disks[i].used << std::endl;
 //         std::cout << "\tUsage: " << disks[i].usage << std::endl;
+//     }
+
+//     service.refresh();
+//     std::cout << "SERVICE_MODULE:" << std::endl;
+
+//     std::vector<ServiceModule::Data> services = service.getServices();
+//     for (size_t i = 0; i < services.size(); i++) {
+//         std::cout << services[i].name << " - " << services[i].status << std::endl;
 //     }
 
 //     return (0);
