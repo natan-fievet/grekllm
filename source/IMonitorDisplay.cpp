@@ -41,4 +41,5 @@ void IMonitorDisplay::refresh(void)
     m_disk.refresh();
     m_process.refresh();
     m_service.refresh();
+    m_battery.refresh();
 }
