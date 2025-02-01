@@ -61,6 +61,8 @@ bool ProcessModule::isEnabled(void) const
 ///////////////////////////////////////////////////////////////////////////////
 bool ProcessModule::refresh(void)
 {
+    if (!m_enabled)
+        return false;
     static const char* command = "/usr/bin/top -b -n 1 | /usr/bin/grep -E '^[ ]*[0-9]+'";
 
     std::array<char, 128> buffer;
