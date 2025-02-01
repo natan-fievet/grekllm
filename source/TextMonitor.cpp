@@ -473,17 +473,16 @@ void TextMonitor::printBattery(WINDOW *Wcontent) const
     mvwprintw(Wcontent, 5,  2, "Capacity:        %s%%", battery.m_capacity.c_str());
     mvwprintw(Wcontent, 7,  2, "Status:          %s", battery.m_status.c_str());
     mvwprintw(Wcontent, 9,  2, "Health:          %s", battery.m_capacity_level.c_str());
-    mvwprintw(Wcontent, 11,  2, "Charge Left:     %s mAh", battery.m_charge_now.c_str());
-    mvwprintw(Wcontent, 13,  2, "Full Charge:     %s mAh", battery.m_charge_full.c_str());
-    mvwprintw(Wcontent, 15,  2, "Design Capacity: %s mAh", battery.m_charge_full_design.c_str());
-    mvwprintw(Wcontent, 17,  2, "Current Draw:    %s mA", battery.m_current_now.c_str());
-    mvwprintw(Wcontent, 19, 2, "Voltage Now:     %s V", battery.m_voltage_now.c_str());
-    mvwprintw(Wcontent, 21, 2, "Min Voltage:     %s V", battery.m_voltage_min_design.c_str());
-    mvwprintw(Wcontent, 23, 2, "Manufacturer:    %s", battery.m_manufacturer.c_str());
-    mvwprintw(Wcontent, 25, 2, "Model:           %s", battery.m_model_name.c_str());
-    mvwprintw(Wcontent, 27, 2, "Technology:      %s", battery.m_technology.c_str());
-    mvwprintw(Wcontent, 29, 2, "Alarm:           %s", battery.m_alarm.c_str());
-    mvwprintw(Wcontent, 31, 2, "Present:         %s", battery.m_present == "1" ? "Yes" : "No");
+    mvwprintw(Wcontent, 11, 2, "Charge Left:     %s mAh", battery.m_charge_now.c_str());
+    mvwprintw(Wcontent, 13, 2, "Full Charge:     %s mAh", battery.m_charge_full.c_str());
+    mvwprintw(Wcontent, 15, 2, "Current Draw:    %s mA", battery.m_current_now.c_str());
+    mvwprintw(Wcontent, 17, 2, "Voltage Now:     %s V", battery.m_voltage_now.c_str());
+    mvwprintw(Wcontent, 19, 2, "Min Voltage:     %s V", battery.m_voltage_min_design.c_str());
+    mvwprintw(Wcontent, 21, 2, "Manufacturer:    %s", battery.m_manufacturer.c_str());
+    mvwprintw(Wcontent, 23, 2, "Model:           %s", battery.m_model_name.c_str());
+    mvwprintw(Wcontent, 25, 2, "Technology:      %s", battery.m_technology.c_str());
+    mvwprintw(Wcontent, 27, 2, "Alarm:           %s", battery.m_alarm.c_str());
+    mvwprintw(Wcontent, 29, 2, "Present:         %s", battery.m_present == "1" ? "Yes" : "No");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
