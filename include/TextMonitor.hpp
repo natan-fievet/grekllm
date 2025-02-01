@@ -74,5 +74,6 @@ public:
     void printMemory(WINDOW* Wcontent) const;
     void printNetwork(WINDOW* Wcontent) const;
     void printCredits(WINDOW* Wcontent) const;
+    void printDisks(WINDOW* Wcontent) const;
     void printHelp(void) const;
 };

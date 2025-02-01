@@ -53,9 +53,10 @@ bool TextMonitor::getInput(void)
     if (c == (int)'p') m_cpu.setEnabled(!m_cpu.isEnabled());
     if (c == (int)'n') m_network.setEnabled(!m_network.isEnabled());
     if (c == (int)'t') m_time.setEnabled(!m_time.isEnabled());
+    if (c == (int)'d') m_disk.setEnabled(!m_disk.isEnabled());
     if (c == (int)'q') return (false);
     if (c == KEY_UP && m_selected > 0) { m_selected--; clear(); }
-    if (c == KEY_DOWN && m_selected < 4) { m_selected++; clear(); }
+    if (c == KEY_DOWN && m_selected < 5) { m_selected++; clear(); }
 
     return (true);
 }
@@ -66,10 +67,10 @@ void TextMonitor::printNavBar(WINDOW* Wcontent) const
     static const char* menuItems[] = {
         "Information   ", "Processor     ",
         "Memory        ", "Network       ",
-        "Credits       "
+        "Disks         ", "Credits       "
     };
     static const char* contentItems[] = {
-        "Information", "[p] Processor", "[m] Memory", "[n] Network", "Credits"
+        "Information", "[p] Processor", "[m] Memory", "[n] Network", "[d] Disks", "Credits"
     };
     WINDOW *Wnavbar = subwin(stdscr, m_height - 2, 19, 1, 2);
 
@@ -414,6 +415,38 @@ void TextMonitor::printNetwork(WINDOW* Wcontent) const {
     if (!m_network.isEnabled()) wattroff(Wcontent, WA_DIM);
 }
 
+void TextMonitor::printDisks(WINDOW* Wcontent) const
+{
+    (void)Wcontent;
+    std::vector<DiskModule::Data> data = m_disk.getDisks();
+    int width = (m_width - 25) / 2 - 1;
+
+    for (size_t i = 0; i < data.size(); i++) {
+        WINDOW* Wdisk = subwin(stdscr, 3, width, 3 + (int)(i / 2) * 3, 23 + (i % 2 ? width + 1 : 0));
+
+        if (!m_disk.isEnabled()) wattron(Wdisk, WA_DIM);
+        box(Wdisk, ACS_VLINE, ACS_HLINE);
+        mvwprintw(Wdisk, 0, 2, " %s ", data[i].mountpoint.c_str());
+
+        int color_pair;
+        if (data[i].usage <= 50)      color_pair = 1;
+        else if (data[i].usage <= 75) color_pair = 2;
+        else                          color_pair = 3;
+
+        int endpoint = (int)((data[i].usage / 100.f) * ((float)width - 20.f));
+        for (int i = 0; i < width - 20; i++) {
+            if (i < endpoint) {
+                wattron(Wdisk, COLOR_PAIR(color_pair));
+                mvwaddch(Wdisk, 1, 1 + i, ACS_CKBOARD);
+                wattroff(Wdisk, COLOR_PAIR(color_pair));
+            } else mvwaddch(Wdisk, 1, 1 + i, ACS_BULLET);
+        }
+
+        mvwprintw(Wdisk, 1, width - 19, " %.f%% %.2f GB ", data[i].usage, data[i].total / 1024.f / 1024.f);
+        if (!m_disk.isEnabled()) wattroff(Wdisk, WA_DIM);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void TextMonitor::printCredits(WINDOW* Wcontent) const
 {
@@ -442,8 +475,9 @@ static void initNcurses(void)
     start_color();
     keypad(stdscr, 1);
     use_default_colors();
-    init_pair(10, COLOR_RED, -1);
-    init_pair(11, COLOR_GREEN, -1);
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -470,7 +504,8 @@ int TextMonitor::loop(void)
         if (m_selected == 1) printProcessor(Wcontent);
         if (m_selected == 2) printMemory(Wcontent);
         if (m_selected == 3) printNetwork(Wcontent);
-        if (m_selected == 4) printCredits(Wcontent);
+        if (m_selected == 4) printDisks(Wcontent);
+        if (m_selected == 5) printCredits(Wcontent);
 
         wrefresh(Wcontent);
     }

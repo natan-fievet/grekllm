@@ -38,4 +38,5 @@ void IMonitorDisplay::refresh(void)
     m_os.refresh();
     m_time.refresh();
     m_user.refresh();
+    m_disk.refresh();
 }
