@@ -144,7 +144,7 @@ void GraphicalMonitor::textbox(sf::RenderWindow &window,
 }
 
 // //outlined textbox /no button with outline
-// ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::textbox(sf::RenderWindow &window,
     const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
     const std::string &textString, float outline, sf::Color outlineColor)
@@ -153,6 +153,35 @@ void GraphicalMonitor::textbox(sf::RenderWindow &window,
     sf::Text text;
     drawTextBox(window, rect, text, size, pos, fillColor, textString, outline,
         outlineColor);
+}
+
+
+void GraphicalMonitor::drawgrid(sf::RenderWindow &window, const sf::Vector2f &size, const sf::Vector2f &pos, sf::Color fillColor,
+    float outline, sf::Color outlineColor, sf::Vector2f spacing)
+{
+    createBackground(window, size, pos, fillColor, outline, outlineColor);
+    float verticalSpacing = size.x * spacing.x;
+    float horizontalSpacing = size.y * spacing.y;
+
+    size_t gridAmountX = static_cast<size_t>(size.x / verticalSpacing);
+    size_t gridAmountY = static_cast<size_t>(size.y / horizontalSpacing);
+
+    sf::Vector2f verticalGridLines = {1.f, size.y};
+    sf::Vector2f horizontalGridLines = {size.x, 1.f};
+
+    float verticalAxis = pos.x;
+    float horizontalAxis = pos.y;
+
+    for (size_t i = 0; i <= gridAmountX; i++){
+        createBackground(window, verticalGridLines, {verticalAxis, pos.y}, sf::Color(164, 164, 164));
+        verticalAxis += verticalSpacing;
+    }
+
+    // Draw horizontal grid lines
+    for (size_t i = 0; i <= gridAmountY; i++){
+        createBackground(window, horizontalGridLines, {pos.x, horizontalAxis}, sf::Color(164, 164, 164));
+        horizontalAxis += horizontalSpacing;
+    }
 }
 
 /*
@@ -362,8 +391,8 @@ void GraphicalMonitor::printProcessor(sf::RenderWindow &window)
     sf::Vector2f graphPos = {_sidebarSize.x
             + static_cast<float>(window.getSize().x * 0.05f),
         pos.y};
-    createBackground(window, graphSize, graphPos, sf::Color::White, 2.f,
-            sf::Color::Blue);
+    drawgrid(window, graphSize, graphPos, sf::Color::White, 2.f,
+            sf::Color::Blue, {0.1f, 0.1f});
     drawCPUGraph(window, m_cpu.getGraph(), graphSize, graphPos);
     pos.y += graphSize.y;
     pos.y += textPrepper(window, "\t\t\t" + formatFloat(m_cpu.getUsage()) + "%", pos).y;
@@ -409,7 +438,7 @@ void GraphicalMonitor::drawMemoryGraph(sf::RenderWindow &window, const std::list
 
 
 ///////////////////////////////////////////////////////////////////////////////
-void GraphicalMonitor::printmem(sf::RenderWindow &window)
+void GraphicalMonitor::printMemory(sf::RenderWindow &window)
 {
     float margine = static_cast<float>(window.getSize().y * 0.01f);
 
@@ -423,15 +452,15 @@ void GraphicalMonitor::printmem(sf::RenderWindow &window)
             + static_cast<float>(window.getSize().x * 0.05f),
         pos.y};
 
-    createBackground(window, graphSize, graphPos, sf::Color::White, 2.f,
-            sf::Color::Magenta);
+    drawgrid(window, graphSize, graphPos, sf::Color::White, 2.f,
+            sf::Color::Magenta, {0.1f, 0.15f});
     drawMemoryGraph(window, m_memory.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, graphPos.y}, false);
     pos.y += graphSize.y;
     pos.y += textPrepper(window, "\t\t\tMemory " + formatFloat(m_memory.getMemoryUsed()) + "%", pos).y;
     pos.y += margine;
-    createBackground(window, graphSize, {graphPos.x, pos.y}, sf::Color::White, 2.f,
-            sf::Color::Magenta);
-    drawMemoryGraph(window, m_memory.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, pos.y}, true);
+    drawgrid(window, graphSize, {graphPos.x, pos.y}, sf::Color::White, 2.f,
+            sf::Color::Magenta, {0.1f, 0.15f});
+    drawMemoryGraph(window, m_memory.getGraph(), {graphSize.x + 2.f, graphSize.y - (graphSize.y * 0.001f)}, {graphPos.x + 2.f, pos.y}, true);
     pos.y += graphSize.y;
     pos.y += textPrepper(window, "\t\t\tMemory " + formatFloat(m_memory.getSwapUsed()) + "%", pos).y;
     pos.y += margine;
@@ -504,14 +533,14 @@ void GraphicalMonitor::printNetwork(sf::RenderWindow &window)
             + static_cast<float>(window.getSize().x * 0.05f),
         pos.y};
 
-    createBackground(window, graphSize, graphPos, sf::Color::White, 2.f,
-            sf::Color::Yellow);
+    drawgrid(window, graphSize, graphPos, sf::Color::White, 2.f,
+            sf::Color::Yellow, {0.1f, 0.15f});
     drawNetworkGraph(window, m_network.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, graphPos.y}, false);
     pos.y += graphSize.y;
     pos.y += textPrepper(window, "\t\t\tUpload: " + formatFloat(m_network.getUp()) + " Kb/s", pos).y;
     pos.y += margine;
-    createBackground(window, graphSize, {graphPos.x, pos.y}, sf::Color::White, 2.f,
-            sf::Color::Yellow);
+    drawgrid(window, graphSize, {graphPos.x, pos.y}, sf::Color::White, 2.f,
+            sf::Color::Yellow, {0.1f, 0.15f});
     drawNetworkGraph(window, m_network.getGraph(), {graphSize.x + 2.f, graphSize.y}, {graphPos.x + 2.f, pos.y}, true);
     pos.y += graphSize.y;
     pos.y += textPrepper(window, "\t\t\tDownload: " + formatFloat(m_network.getDown()) + " Kb/s", pos).y;
@@ -713,7 +742,7 @@ void GraphicalMonitor::handlePrint(sf::RenderWindow &window)
     if (m_selected == 1)
         printProcessor(window);
     if (m_selected == 2)
-        printmem(window);
+        printMemory(window);
     if (m_selected == 3)
         printProcessus(window);
     if (m_selected == 4)

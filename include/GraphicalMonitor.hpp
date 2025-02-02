@@ -79,7 +79,7 @@ public:
     void PrintNavBar(sf::RenderWindow &window);
     void printInfo(sf::RenderWindow &window);
     void printProcessor(sf::RenderWindow &window);
-    void printmem(sf::RenderWindow &window);
+    void printMemory(sf::RenderWindow &window);
     void printNetwork(sf::RenderWindow &window);
     void printDisk(sf::RenderWindow &window);
     void printProcessus(sf::RenderWindow &window);
@@ -113,6 +113,9 @@ public:
         const std::string &textString, float outline, sf::Color outlineColor);
 
     void backgroundBuild(sf::RenderWindow &window);
+    void drawgrid(sf::RenderWindow &window, const sf::Vector2f &size,
+        const sf::Vector2f &pos, sf::Color fillColor, float outline,
+        sf::Color outlineColor, sf::Vector2f spacing);
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
@@ -137,7 +140,7 @@ public:
     void drawNetworkGraph(sf::RenderWindow &window,
         const std::list<NetworkModule::Data> &graph, const sf::Vector2f &size,
         const sf::Vector2f &position, bool isUpload);
-    
+
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     void handlePrint(sf::RenderWindow &window);
