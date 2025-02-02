@@ -757,7 +757,9 @@ void GraphicalMonitor::handlePrint(sf::RenderWindow &window)
 ///////////////////////////////////////////////////////////////////////////////
 int GraphicalMonitor::loop(void)
 {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "MyGKrellm",
+    sf::VideoMode mode = sf::VideoMode::getDesktopMode();
+    int ratio = (mode.width / 800) - 1;
+    sf::RenderWindow window(sf::VideoMode(800 * ratio, 600 * ratio), "MyGKrellm",
         sf::Style::Close);
     sf::Event event;
 
