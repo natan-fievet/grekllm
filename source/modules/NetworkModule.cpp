@@ -97,10 +97,8 @@ bool NetworkModule::refresh(void)
         m_up = static_cast<float>((currentUp - lastUp) / elapsed / 1024.0);
         m_down = static_cast<float>((currentDown - lastDown) / elapsed / 1024.0);
 
-        while(m_graph.size() >= 75)
+        if (m_graph.size() >= 200)
             m_graph.pop_back();
-        // if (m_graph.size() >= 200)
-        //     m_graph.pop_back();
         m_graph.push_front({m_up, m_down});
     }
 

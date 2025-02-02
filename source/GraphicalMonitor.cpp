@@ -54,10 +54,12 @@ Todo:
 - getinputs ✅
 - mouse inputsgi ✅
 - getinfo ✅
-- graphs
-- get processor info
-- get mem info
-- geet network info
+- graphs ✅
+- get processor info ✅
+- get mem info ✅
+- geet network info ✅
+- processus info ✅
+- credit ✅
 
 
 
@@ -159,7 +161,6 @@ info:
 - buttons are 36/680 about 5% of y axis and 20% x
 - title is 50/677 about 7.5%;
 */
-
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::backgroundBuild(sf::RenderWindow &window)
 {
@@ -326,15 +327,6 @@ void drawGraph(sf::RenderWindow &window, const std::vector<float> &values,
     window.draw(lineGraph);
 }
 
-const size_t MAX_GRAPH_POINTS = 200; // Adjust to match your screen width
-
-void addDataPoint(std::list<float> &graph, float newValue) {
-    graph.push_back(newValue);
-    if (graph.size() > MAX_GRAPH_POINTS) {
-        graph.pop_front(); // Remove oldest value to maintain size
-    }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::drawCPUGraph(sf::RenderWindow &window, const std::list<double> &graph,
                   const sf::Vector2f &size, const sf::Vector2f &position)
@@ -343,7 +335,7 @@ void GraphicalMonitor::drawCPUGraph(sf::RenderWindow &window, const std::list<do
 
     std::vector<float> values;
     auto it = graph.end();
-    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+    int dataPoints = std::min({static_cast<int>(graph.size()), static_cast<int>(size.x), 75});
 
     //convert data into a float list
     for (int i = 0; i < dataPoints; ++i) {
@@ -401,7 +393,7 @@ void GraphicalMonitor::drawMemoryGraph(sf::RenderWindow &window, const std::list
 
     std::vector<float> values;
     auto it = graph.end();
-    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+    int dataPoints = std::min({static_cast<int>(graph.size()), static_cast<int>(size.x), 75});
 
     //convert data into a float list
     for (int i = 0; i < dataPoints; ++i) {
@@ -423,7 +415,7 @@ void GraphicalMonitor::printmem(sf::RenderWindow &window)
 
     sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
     pos.y += margine * 4;
-    
+
     sf::Vector2f graphSize = {
         (static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.8f,
         static_cast<float>(window.getSize().y * 0.25f)};
@@ -475,7 +467,7 @@ void GraphicalMonitor::drawNetworkGraph(sf::RenderWindow &window, const std::lis
 
     std::vector<float> values;
     auto it = graph.end();
-    int dataPoints = std::min(static_cast<int>(graph.size()), static_cast<int>(size.x));
+    int dataPoints = std::min({static_cast<int>(graph.size()), static_cast<int>(size.x), 75});
 
     // Find the max value to scale the graph correctly
     float maxValue = 0;
@@ -536,7 +528,7 @@ void GraphicalMonitor::printNetwork(sf::RenderWindow &window)
 void GraphicalMonitor::printDisk(sf::RenderWindow &window)
 {
     sf::Vector2f margine = {static_cast<float>(window.getSize().x * 0.01f), static_cast<float>(window.getSize().y * 0.01f)};
-    
+
     sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
     pos.y += margine.y * 4;
 

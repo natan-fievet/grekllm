@@ -152,11 +152,8 @@ bool CpuModule::refresh(void)
     }
     m_usage = getCpuUsage();
 
-    while (m_graph.size() >= 75)
+    if (m_graph.size() >= 200)
         m_graph.pop_front();
-
-    // if (m_graph.size() >= 200)
-    //     m_graph.pop_front();
     m_graph.push_back(m_usage);
     m_procs.pop_back();
     cpuinfo.close();
