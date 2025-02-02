@@ -259,7 +259,7 @@ sf::Vector2f GraphicalMonitor::textPrepper(sf::RenderWindow &window,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-std::string formatFloat(float value) {
+std::string GraphicalMonitor::formatFloat(float value) {
     std::ostringstream stream;
     stream << std::fixed << std::setprecision(2) << value;
     return stream.str();
@@ -322,7 +322,7 @@ void GraphicalMonitor::printInfo(sf::RenderWindow &window)
     }
 }
 
-void drawGraph(sf::RenderWindow &window, const std::vector<float> &values,
+void GraphicalMonitor::drawGraph(sf::RenderWindow &window, const std::vector<float> &values,
                const sf::Vector2f &size, const sf::Vector2f &position,
                sf::Color lineColor, sf::Color fillColor)
 {
@@ -709,6 +709,7 @@ void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
         m_time.setEnabled(!m_time.isEnabled());
     if (event.key.code == sf::Keyboard::Q)
         window.close();
+
 }
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handlemouse(sf::Event event)

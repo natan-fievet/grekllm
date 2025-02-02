@@ -132,6 +132,10 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+    void drawGraph(sf::RenderWindow &window, const std::vector<float> &values,
+        const sf::Vector2f &size, const sf::Vector2f &position,
+        sf::Color lineColor, sf::Color fillColor);
+
     void drawCPUGraph(sf::RenderWindow &window, const std::list<double> &graph,
         const sf::Vector2f &size, const sf::Vector2f &position);
     void drawMemoryGraph(sf::RenderWindow &window,
@@ -145,4 +149,6 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     void handlePrint(sf::RenderWindow &window);
     void handleOptimisation(sf::RenderWindow &window);
+    std::string formatFloat(float value);
+
 };
