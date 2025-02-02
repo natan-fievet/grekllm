@@ -249,7 +249,7 @@ sf::Vector2f GraphicalMonitor::subTitle(sf::RenderWindow &window,
 sf::Vector2f GraphicalMonitor::textPrepper(sf::RenderWindow &window,
     const std::string words, sf::Vector2f pos)
 {
-    sf::Text text(words, m_font, 28);
+    sf::Text text(words, m_font, (window.getSize().x * 0.035));
     sf::FloatRect textBounds = text.getLocalBounds();
 
     sf::Vector2f size = {textBounds.width,
@@ -462,7 +462,7 @@ void GraphicalMonitor::printMemory(sf::RenderWindow &window)
             sf::Color::Magenta, {0.1f, 0.15f});
     drawMemoryGraph(window, m_memory.getGraph(), {graphSize.x + 2.f, graphSize.y - (graphSize.y * 0.001f)}, {graphPos.x + 2.f, pos.y}, true);
     pos.y += graphSize.y;
-    pos.y += textPrepper(window, "\t\t\tMemory " + formatFloat(m_memory.getSwapUsed()) + "%", pos).y;
+    pos.y += textPrepper(window, "\t\t\tSwap " + formatFloat(m_memory.getSwapUsed()) + "%", pos).y;
     pos.y += margine;
 
     sf::Vector2f memPos = pos;
@@ -591,7 +591,7 @@ void GraphicalMonitor::printDisk(sf::RenderWindow &window)
         createBackground(window, diskSize, temp, sf::Color::White, 2.f, sf::Color::Black);
         createBackground(window, diskUsage, temp, percentage);
         if (m_disk.isEnabled())
-            textPrepper(window, formatFloat(data[i].usage) + " / " + formatFloat(data[i].total / 1024.f / 1024.f)+ "Gb", {temp.x + margine.x * 20, temp.y + margine.y});
+            textPrepper(window, formatFloat(data[i].usage) + "% " + formatFloat(data[i].total / 1024.f / 1024.f)+ "Gb", {temp.x + margine.x * 20, temp.y + margine.y});
         if (i % 2 == 1){
             diskPos.y += diskSize.y;
             diskPos.y += margine.y * 4;
