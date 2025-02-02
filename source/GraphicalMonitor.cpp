@@ -36,7 +36,7 @@ GraphicalMonitor::GraphicalMonitor(void)
       _titlecardSize()
 {
     if (!m_font.loadFromFile(
-            "/usr/share/fonts/google-carlito-fonts/Carlito-Regular.ttf")) {
+            "./assets/Carlito-Regular.ttf")) {
         std::cerr << "Error loading font!" << std::endl;
     }
 }
