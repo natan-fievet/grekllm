@@ -82,6 +82,7 @@ public:
     void printmem(sf::RenderWindow &window);
     void printNetwork(sf::RenderWindow &window);
     void printDisk(sf::RenderWindow &window);
+    void printProcessus(sf::RenderWindow &window);
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
@@ -135,4 +136,9 @@ public:
     void drawNetworkGraph(sf::RenderWindow &window,
         const std::list<NetworkModule::Data> &graph, const sf::Vector2f &size,
         const sf::Vector2f &position, bool isUpload);
+    
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    void handlePrint(sf::RenderWindow &window);
+    void handleOptimisation(sf::RenderWindow &window);
 };

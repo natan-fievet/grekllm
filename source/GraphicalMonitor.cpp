@@ -164,7 +164,7 @@ info:
 void GraphicalMonitor::backgroundBuild(sf::RenderWindow &window)
 {
     static const char *contentItems[] = {"Information", "[p] Processor", "[m] Memory",
-        "[n] Network", "[d] Disk", "[c] Credits"};
+        "[e] Processus", "[n] Network", "[d] Disk", "[c] Credits"};
 
     //side bar
     _sidebarSize = {static_cast<float>(window.getSize().x) * 0.22f,
@@ -222,8 +222,6 @@ sf::Vector2f GraphicalMonitor::textPrepper(sf::RenderWindow &window,
     sf::Text text(words, m_font, 28);
     sf::FloatRect textBounds = text.getLocalBounds();
 
-    // sf::Vector2f size = {textBounds.width, _titlecardSize.y};
-
     sf::Vector2f size = {textBounds.width,
         _titlecardSize.y - (_titlecardSize.y - textBounds.height)};
     textbox(window, size, pos, sf::Color::Transparent, words);
@@ -241,7 +239,7 @@ std::string formatFloat(float value) {
 void GraphicalMonitor::PrintNavBar(sf::RenderWindow &window)
 {
     static const char *menuItems[] = {"Information", "Processor", "Memory",
-        "Network", "Disk", "Credits"};
+        "Processus", "Network", "Disk", "Credits"};
 
     backgroundBuild(window);
     const sf::Vector2 buttonSize = {static_cast<float>(window.getSize().x)
@@ -534,8 +532,6 @@ void GraphicalMonitor::printNetwork(sf::RenderWindow &window)
     textPrepper(window, std::string("Download: ") + formatFloat(m_network.getDown()) + " Kb/s", pos);
 }
 
-    // need to create a for loop. will use pair numbers for position.
-    // first box with outline. then we need second box with fill percentage third box with words
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::printDisk(sf::RenderWindow &window)
 {
@@ -553,6 +549,8 @@ void GraphicalMonitor::printDisk(sf::RenderWindow &window)
         + static_cast<float>(window.getSize().x * 0.05f),
         pos.y};
 
+    if (!m_disk.isEnabled())
+        return;
     for (size_t i = 0; i < data.size(); i++){
         sf::Vector2f temp = diskPos;
         sf::Vector2f diskUsage = {diskSize.x * (data[i].usage /100.f) , diskSize.y};
@@ -570,11 +568,8 @@ void GraphicalMonitor::printDisk(sf::RenderWindow &window)
             temp.x += margine.x * 3;
         }
         temp.y += textPrepper(window, data[i].mountpoint.c_str(), temp).y;
-
-
         createBackground(window, diskSize, temp, sf::Color::White, 2.f, sf::Color::Black);
         createBackground(window, diskUsage, temp, percentage);
-
         if (i % 2 == 1){
             diskPos.y += diskSize.y;
             diskPos.y += margine.y * 4;
@@ -583,12 +578,73 @@ void GraphicalMonitor::printDisk(sf::RenderWindow &window)
 
 }
 
+
+void GraphicalMonitor::printProcessus(sf::RenderWindow &window)
+{
+    sf::Vector2f margine = {static_cast<float>(window.getSize().x * 0.01f), static_cast<float>(window.getSize().y * 0.01f)};
+
+    sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
+    pos.y += margine.y * 4;
+    static const char *header[] {
+        "PID", "USER", "CPU%", "MEM%", "RES", "STATE", "TIME", "COMMAND"};
+
+    sf::Vector2f titleBoxSize = {(static_cast<float>(window.getSize().x) - _sidebarSize.x) * 0.1f, static_cast<float>(window.getSize().y * 0.05f)};
+
+    sf::Vector2f verticalGridline = {1.f, static_cast<float>(window.getSize().y)};
+
+    sf::Vector2f horizontalGridline = {(static_cast<float>(window.getSize().x) - (_sidebarSize.x + margine.x * 2)), 2.f};
+
+    for (size_t i = 0; i < sizeof(header) / sizeof(header[0]); i++) {
+
+        textbox(window, titleBoxSize, pos, sf::Color::Transparent, header[i], 1.f, sf::Color::Transparent);
+
+        pos.x += titleBoxSize.x;
+        if (i != sizeof(header) / sizeof(header[0]) - 1)
+            createBackground(window,verticalGridline, pos, sf::Color(164, 164, 164));
+        pos.x += margine.x;
+    }
+    pos.x = _sidebarSize.x;
+    pos.y += margine.y * 4;
+    createBackground(window, horizontalGridline, pos, sf::Color(164, 164, 164));
+
+    std::vector<ProcessModule::Data> proccs = m_process.getProcesses();
+
+    for (const auto& proc : proccs) {
+        sf::Vector2f tempPos = pos;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, std::to_string(proc.pid));
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, proc.user.c_str());
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, formatFloat(proc.cpu));
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, formatFloat(proc.mem));
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, std::string(proc.res.c_str()));
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, std::to_string(proc.state));
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, std::string(proc.time.c_str()));
+        tempPos.x += titleBoxSize.x;
+        tempPos.x += margine.x;
+        textbox(window, titleBoxSize, tempPos, sf::Color::Transparent, std::string(proc.command.c_str()));
+        pos.y += margine.y * 3;
+    }
+
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
 {
     if (event.key.code == sf::Keyboard::Up && m_selected > 0)
         m_selected--;
-    if (event.key.code == sf::Keyboard::Down && m_selected < 4)
+    if (event.key.code == sf::Keyboard::Down && m_selected < 6)
         m_selected++;
     if (event.key.code == sf::Keyboard::U)
         m_user.setEnabled(!m_user.isEnabled());
@@ -600,6 +656,8 @@ void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
         m_cpu.setEnabled(!m_cpu.isEnabled());
     if (event.key.code == sf::Keyboard::N)
         m_network.setEnabled(!m_network.isEnabled());
+    if (event.key.code == sf::Keyboard::D)
+        m_disk.setEnabled(!m_disk.isEnabled());
     if (event.key.code == sf::Keyboard::T)
         m_time.setEnabled(!m_time.isEnabled());
     if (event.key.code == sf::Keyboard::Q)
@@ -627,6 +685,28 @@ void GraphicalMonitor::handleInput(sf::Event event, sf::RenderWindow &window)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::handlePrint(sf::RenderWindow &window)
+{
+    PrintNavBar(window);
+
+    if (m_selected == 0)
+        printInfo(window);
+    if (m_selected == 1)
+        printProcessor(window);
+    if (m_selected == 2)
+        printmem(window);
+    if (m_selected == 3)
+        printProcessus(window);
+    if (m_selected == 4)
+        printNetwork(window);
+    if (m_selected == 5)
+        printDisk(window);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 int GraphicalMonitor::loop(void)
 {
     sf::RenderWindow window(sf::VideoMode(800, 600), "MyGKrellm",
@@ -646,17 +726,8 @@ int GraphicalMonitor::loop(void)
 
         window.clear();
 
-        PrintNavBar(window);
-        if (m_selected == 0)
-            printInfo(window);
-        if (m_selected == 1)
-            printProcessor(window);
-        if (m_selected == 2)
-            printmem(window);
-        if (m_selected == 3)
-            printNetwork(window);
-        if (m_selected == 4)
-            printDisk(window);
+
+        handlePrint(window);
 
         window.display();
     }
