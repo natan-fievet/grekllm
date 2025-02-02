@@ -105,7 +105,7 @@ void GraphicalMonitor::drawTextBox(sf::RenderWindow &window,
     // Create the text
     text.setFont(m_font);
     text.setString(textString);
-    text.setCharacterSize(14);
+    text.setCharacterSize(window.getSize().x * 0.0175);
     text.setFillColor(sf::Color(32, 32, 32));
     rect.setOutlineThickness(outline);
     rect.setOutlineColor(outlineColor);
