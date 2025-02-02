@@ -79,8 +79,10 @@ bool MemoryModule::refresh(void)
     m_swapFree = m_data["SwapFree"];
     m_swapUsed = (((float)m_swapTotal - (float)m_swapFree) * 100.f) / (float)m_swapTotal;
 
-    if (m_graph.size() == 200)
-        m_graph.pop_back();
+    while(m_graph.size() >= 75)
+            m_graph.pop_back();
+    // if (m_graph.size() == 200)
+    //     m_graph.pop_back();
     m_graph.push_front({m_memUsed, m_swapUsed});
 
     return (true);

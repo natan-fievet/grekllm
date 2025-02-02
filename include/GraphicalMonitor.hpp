@@ -83,6 +83,7 @@ public:
     void printNetwork(sf::RenderWindow &window);
     void printDisk(sf::RenderWindow &window);
     void printProcessus(sf::RenderWindow &window);
+    void printCredit(sf::RenderWindow &window);
 
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////

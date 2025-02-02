@@ -164,7 +164,7 @@ info:
 void GraphicalMonitor::backgroundBuild(sf::RenderWindow &window)
 {
     static const char *contentItems[] = {"Information", "[p] Processor", "[m] Memory",
-        "[e] Processus", "[n] Network", "[d] Disk", "[c] Credits"};
+        "[e] Processus", "[n] Network", "[d] Disk", "Credits"};
 
     //side bar
     _sidebarSize = {static_cast<float>(window.getSize().x) * 0.22f,
@@ -638,6 +638,29 @@ void GraphicalMonitor::printProcessus(sf::RenderWindow &window)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void GraphicalMonitor::printCredit(sf::RenderWindow &window)
+{
+    sf::Vector2f margine = {static_cast<float>(window.getSize().x * 0.01f), static_cast<float>(window.getSize().y * 0.01f)};
+
+    sf::Vector2f pos = {_sidebarSize.x, _titlecardSize.y};
+    pos.y += margine.y * 4;
+
+    textPrepper(window, "Nathan FIEVET", pos);
+    textPrepper(window, "(natan-fievet)", {pos.x + (margine.x * 15.f), pos.y});
+    pos.y += margine.y * 5;
+
+    textPrepper(window, "Mallory SCOTTON", pos);
+    textPrepper(window, "(mallory-scotton)", {pos.x + (margine.x * 15.f), pos.y});
+    pos.y += margine.y * 5;
+
+    textPrepper(window, "Ossan MSOILI", pos);
+    textPrepper(window, "(Omegalpha28)", {pos.x + (margine.x * 15.f), pos.y});
+    pos.y += margine.y * 5;
+
+    textPrepper(window, "Hugo CATHELAIN", pos);
+    textPrepper(window, "(Hugo-Cathelain)", {pos.x + (margine.x * 15.f), pos.y});
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
@@ -658,6 +681,8 @@ void GraphicalMonitor::handlekeys(sf::Event event, sf::RenderWindow &window)
         m_network.setEnabled(!m_network.isEnabled());
     if (event.key.code == sf::Keyboard::D)
         m_disk.setEnabled(!m_disk.isEnabled());
+    if (event.key.code == sf::Keyboard::E)
+        m_process.setEnabled(!m_process.isEnabled());
     if (event.key.code == sf::Keyboard::T)
         m_time.setEnabled(!m_time.isEnabled());
     if (event.key.code == sf::Keyboard::Q)
@@ -684,7 +709,6 @@ void GraphicalMonitor::handleInput(sf::Event event, sf::RenderWindow &window)
     handlemouse(event);
 }
 
-///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
 void GraphicalMonitor::handlePrint(sf::RenderWindow &window)
@@ -703,6 +727,8 @@ void GraphicalMonitor::handlePrint(sf::RenderWindow &window)
         printNetwork(window);
     if (m_selected == 5)
         printDisk(window);
+    if (m_selected == 6)
+        printCredit(window);
 
 }
 
