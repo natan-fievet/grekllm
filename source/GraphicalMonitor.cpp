@@ -541,8 +541,7 @@ void GraphicalMonitor::printDisk(sf::RenderWindow &window)
         + static_cast<float>(window.getSize().x * 0.05f),
         pos.y};
 
-    if (!m_disk.isEnabled())
-        return;
+
     for (size_t i = 0; i < data.size(); i++){
         sf::Vector2f temp = diskPos;
         sf::Vector2f diskUsage = {diskSize.x * (data[i].usage /100.f) , diskSize.y};
@@ -562,6 +561,8 @@ void GraphicalMonitor::printDisk(sf::RenderWindow &window)
         temp.y += textPrepper(window, data[i].mountpoint.c_str(), temp).y;
         createBackground(window, diskSize, temp, sf::Color::White, 2.f, sf::Color::Black);
         createBackground(window, diskUsage, temp, percentage);
+        if (m_disk.isEnabled())
+            textPrepper(window, formatFloat(data[i].usage) + " / " + formatFloat(data[i].total / 1024.f / 1024.f)+ "Gb", {temp.x + margine.x * 20, temp.y + margine.y});
         if (i % 2 == 1){
             diskPos.y += diskSize.y;
             diskPos.y += margine.y * 4;
