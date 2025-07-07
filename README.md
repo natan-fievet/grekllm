@@ -168,9 +168,9 @@ We welcome contributions to MyGKrellm! Please read our [Contributing Guidelines]
 ## 👥 Authors
 
 - **Mallory SCOTTON** - Lead Developer
-- **Nathan Fievet** -Core Developer and UI Developer
+- **Nathan FIEVET** -Core Developer and UI Developer
 - **Hugo CATHELAIN** - Core Developer
-- **Ossan Msoili** - System Modules Developer
+- **Ossan MSOILI** - System Modules Developer
 
 
 <div align="center">
